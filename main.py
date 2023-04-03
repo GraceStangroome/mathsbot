@@ -10,11 +10,10 @@ MSE (Mean Squared Error)
 MAE (Mean Absolute Error)
 F1
 KNN Weights (K Nearest Neighbour Weights)
+SD (Standard Deviation)
+Mean
 
 Upcoming is:
-KNN Weights (K Nearest Neighbour Weights)
-SD (Standard Deviation)
-Mean 
 Gaussian Probability
 Euclidean Distance
 Manhattan Distance
@@ -118,6 +117,18 @@ while a == 0:
         for i in range(len(xs.shape[0]) -1):
             distance += (xs[i] - ys[i]) ** 2
         answer = sqrt(distance)
+        print("Answer: ", answer)
+    elif user == "sd":
+        print("You have chosen standard deviation")
+        vals = input("Enter all values, separated with a comma e.g. '2,4,6'")
+        array = toarray(vals)
+        answer = np.std(array)
+        print("Answer: ", answer)
+    elif user == "mean":
+        print("You have chosen mean")
+        vals = input("Enter all values, separated with a comma e.g. '2,4,6'")
+        array = toarray(vals)
+        answer = np.mean(array)
         print("Answer: ", answer)
     else:
         print("Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. Capitalisation doesn't matter.")
