@@ -12,16 +12,18 @@ F1
 KNN Weights (K Nearest Neighbour Weights)
 SD (Standard Deviation)
 Mean
+Euclidean Distance
+Manhattan Distance
 
 Upcoming is:
 Gaussian Probability
-Euclidean Distance
-Manhattan Distance
 Bayes Theorem
 KNN
 Linear Regression
     - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
 Gaussian Mixture Distribution
+Naive Bayes Classifier 
+    - Calculates which class a new data point will be in
 
 
 Type END to quit.
@@ -130,6 +132,17 @@ while a == 0:
         array = toarray(vals)
         answer = np.mean(array)
         print("Answer: ", answer)
+    # thanks to https://datagy.io/python-euclidian-distance/
+    elif user == "euclidean distance":
+        # TODO: Write a getPoints function
+        pointA = toarray(input("Enter co-ordinates of the first point e.g. '2,4'"))
+        pointB = toarray(input("Enter co-ordinates of the second point e.g. '5,7'"))
+        squaredDistance = np.sum(np.square(pointA - pointB))
+        answer = np.sqrt(squaredDistance)
+        print("Answer: ", answer)
+    elif user == "manhattan distance":
+        #distance = | x2 - x1 | + | y2 - y1 |.
+        #TODO: Get points, calculate distance, return
     else:
         print("Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. Capitalisation doesn't matter.")
         print("I can currently calculate the following: ", possible)
