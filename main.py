@@ -35,9 +35,35 @@ print("Starting up")
 
 def usesaved():
     if globalsExist:
-        use = input("Would you like to use your saved arrays? Y/N")
+        use = input("Would you like to use your saved values? Y/N")
         if use == "Y" or use == "y":
             return True
+    return False
+
+
+def savevalues(xvals, yvals, what):
+    global globalsExist
+    save = input("Would you like to save these arrays and use them again? Y/N")
+    if save == "Y" or save == "y":
+        print("You chose to save the arrays. Saving...")
+        globalsExist = True
+        if what == "arrays":
+            global globalxs
+            global globalys
+            globalxs = xvals
+            globalys = yvals
+            print("Saved")
+            return True
+        elif what == "points":
+            global pointA
+            global pointB
+            pointA = xvals
+            pointB = yvals
+            print("Saved")
+            return True
+        else:
+            print("An internal error has occurred. Values not saved. Try again.")
+            return False
     return False
 
 
@@ -46,30 +72,36 @@ def toarray(vals):
 
 
 def getxys():
-    global globalsExist
     global globalxs
     global globalys
     if usesaved():
         print("Using saved")
         return globalxs, globalys
     else:
-        inputx = input("Enter all X values, separated with a comma e.g. '2,4,6'")
-        inputy = input("Enter all Y values, separated with a comma e.g. '1,3,7'")
-        xvals = toarray(inputx)
-        yvals = toarray(inputy)
-        save = input("Would you like to save these arrays and use them again? Y/N")
-        if save == "Y" or save == "y":
-            print("You chose to save the arrays. Saving...")
-            globalsExist = True
-            globalxs = xvals
-            globalys = yvals
-            print("Saved")
+        xvals = toarray(input("Enter all X values, separated with a comma e.g. '2,4,6'"))
+        yvals = toarray(input("Enter all Y values, separated with a comma e.g. '1,3,7'"))
+        savevalues(xvals, yvals, "arrays")
     return xvals, yvals
+
+
+def getpoints():
+    global pointA
+    global pointB
+    if usesaved():
+        print("Using saved")
+        return pointA, pointB
+    else:
+        a = toarray(input("Enter co-ordinates of the first point e.g. '2,4'"))
+        b = toarray(input("Enter co-ordinates of the second point e.g. '5,7'"))
+        savevalues(a, b, "points")
+    return a, b
 
 
 globalsExist = False
 globalxs = np.array([])
 globalys = np.array([])
+pointA = (0, 0)
+pointB = (0, 0)
 a = 0
 while a == 0:
     user = input("What do you need to calculate?").lower().strip()
@@ -134,15 +166,15 @@ while a == 0:
         print("Answer: ", answer)
     # thanks to https://datagy.io/python-euclidian-distance/
     elif user == "euclidean distance":
-        # TODO: Write a getPoints function
-        pointA = toarray(input("Enter co-ordinates of the first point e.g. '2,4'"))
-        pointB = toarray(input("Enter co-ordinates of the second point e.g. '5,7'"))
-        squaredDistance = np.sum(np.square(pointA - pointB))
+        x, y = getpoints()
+        squaredDistance = np.sum(np.square(x - y))
         answer = np.sqrt(squaredDistance)
         print("Answer: ", answer)
+    # thanks to https://math.stackexchange.com/questions/139600/how-do-i-calculate-euclidean-and-manhattan-distance-by-hand
     elif user == "manhattan distance":
-        #distance = | x2 - x1 | + | y2 - y1 |.
-        #TODO: Get points, calculate distance, return
+        x, y = getpoints()
+        distance = abs(x[0] - y[0]) + abs(x[1] - y[1])
+        print("Answer: ", distance)
     else:
         print("Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. Capitalisation doesn't matter.")
         print("I can currently calculate the following: ", possible)
