@@ -1,5 +1,5 @@
 # Welcome to Math Bot. 
-Math bot does some specific calculations in python, so that you can do other things :)
+Math bot does some specific calculations in Python, so that you can do other things :)
 
 Math bot will ask you what you wish to calculate, and can remember previously given arrays and data points to work with again.
 Its memory is reset every time you finish working with Math bot.
@@ -45,7 +45,9 @@ Math bot will ask for a list of xs and ys and will calculate the manhattan dista
 ### Gaussian Probability (Normal Distribution)
 Math bot will find the probability density at a particular point given a list of numbers
 ### Gaussian Mixture Model
-Math bot estimates parameters of a Gaussian mixture model probability distribution
+Math bot estimates parameters of a Gaussian mixture model probability distribution when you give it some data.
+Currently only supports 2 arrays (xs and ys for example)
+Please read this documentation for more information: https://scikit-learn.org/stable/modules/mixture.html#gmm 
 ## Upcoming is:
 More details always coming soon!
 ### Bayes Theorem

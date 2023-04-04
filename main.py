@@ -1,7 +1,11 @@
+import matplotlib
 import numpy as np
 import scipy
+import pandas as pd
+from sklearn. mixture import GaussianMixture
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt
+import matplotlib.pyplot as plt
 # A python program that asks what you would like to do, and can calculate:
 possible = """
 Accuracy
@@ -204,7 +208,30 @@ while a == 0:
         answer = scipy.stats.norm(mean, sd).pdf(value)
         print("Probability Density: ", answer)
     elif user == "gaussian mixture model" or user == "mixture":
-
+        print("You have chosen Gaussian Mixture Model")
+        print("Please enter the TRAINING data")
+        xs, ys = getxys()
+        data = pd.DataFrame({'xs': xs, 'ys': ys})
+        gmm = GaussianMixture(n_components=3)
+        gmm.fit(data)
+        plt.figure()
+        plt.scatter(xs, ys)
+        print("Weights: ", gmm.weights_)
+        means = gmm.means_
+        print("Means: ", means)
+        print("Co-variances: ", gmm.covariances_)
+        # thanks to https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
+        for i, (X, Y) in enumerate(means):
+            plt.scatter(X, Y, color='pink')
+        plt.show()
+        more = input("Would you like to predict labels for more data? Y/N").lower().strip()
+        if more == "y":
+            print("Please enter the TESTING data")
+            testXs, testYs = getxys()
+            data = pd.DataFrame({'xs': testXs, 'ys': testYs})
+            results = gmm.predict(data)
+            print("Labels: ", results)
+            plt.show()
     else:
         print("Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. Capitalisation doesn't matter.")
         print("I can currently calculate the following: ", possible)
