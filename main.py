@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt
 # A python program that asks what you would like to do, and can calculate:
@@ -14,14 +15,16 @@ SD (Standard Deviation)
 Mean
 Euclidean Distance
 Manhattan Distance
+Gaussian Probability (Normal Distribution)
+    - Will find the probability density at a particular point given a list of numbers
+Gaussian Mixture Model
+    - estimates parameters of a Gaussian mixture model probability distribution
 
 Upcoming is:
-Gaussian Probability
 Bayes Theorem
 KNN
 Linear Regression
     - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
-Gaussian Mixture Distribution
 Naive Bayes Classifier 
     - Calculates which class a new data point will be in
 
@@ -61,6 +64,10 @@ def savevalues(xvals, yvals, what):
             pointB = yvals
             print("Saved")
             return True
+        elif what == "array":
+            global arr
+            arr = xvals
+            print("Saved")
         else:
             print("An internal error has occurred. Values not saved. Try again.")
             return False
@@ -84,6 +91,17 @@ def getxys():
     return xvals, yvals
 
 
+def getarray():
+    global arr
+    if usesaved():
+        print("Using saved")
+        return arr
+    else:
+        xvals = toarray(input("Enter all values, separated with a comma e.g. '2,4,6'"))
+        savevalues(xvals, 0, "array")
+    return xvals
+
+
 def getpoints():
     global pointA
     global pointB
@@ -100,6 +118,7 @@ def getpoints():
 globalsExist = False
 globalxs = np.array([])
 globalys = np.array([])
+arr = np.array([])
 pointA = (0, 0)
 pointB = (0, 0)
 a = 0
@@ -154,27 +173,38 @@ while a == 0:
         print("Answer: ", answer)
     elif user == "sd":
         print("You have chosen standard deviation")
-        vals = input("Enter all values, separated with a comma e.g. '2,4,6'")
-        array = toarray(vals)
+        array = getarray()
         answer = np.std(array)
         print("Answer: ", answer)
     elif user == "mean":
         print("You have chosen mean")
-        vals = input("Enter all values, separated with a comma e.g. '2,4,6'")
-        array = toarray(vals)
+        array = getarray()
         answer = np.mean(array)
         print("Answer: ", answer)
     # thanks to https://datagy.io/python-euclidian-distance/
-    elif user == "euclidean distance":
+    elif user == "euclidean distance" or user == "euclidean":
+        print("You have chosen Euclidean Distance")
         x, y = getpoints()
         squaredDistance = np.sum(np.square(x - y))
         answer = np.sqrt(squaredDistance)
         print("Answer: ", answer)
     # thanks to https://math.stackexchange.com/questions/139600/how-do-i-calculate-euclidean-and-manhattan-distance-by-hand
-    elif user == "manhattan distance":
+    elif user == "manhattan distance" or user == "manhattan":
+        print("You have chosen Manhattan Distance")
         x, y = getpoints()
         distance = abs(x[0] - y[0]) + abs(x[1] - y[1])
         print("Answer: ", distance)
+    # thanks to https://stackoverflow.com/questions/12412895/how-to-calculate-probability-in-a-normal-distribution-given-mean-standard-devi
+    elif user == "gaussian probability" or user == "gaussian":
+        print("You have chosen Gaussian probability")
+        value = int(input("What value would you like the probability density to be caluclated at?: "))
+        array = getarray()
+        mean = np.mean(array)
+        sd = np.std(array)
+        answer = scipy.stats.norm(mean, sd).pdf(value)
+        print("Probability Density: ", answer)
+    elif user == "gaussian mixture model" or user == "mixture":
+
     else:
         print("Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. Capitalisation doesn't matter.")
         print("I can currently calculate the following: ", possible)
