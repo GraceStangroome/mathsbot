@@ -43,9 +43,12 @@ Math bot will ask for a list of xs and ys and will calculate the euclidean dista
     - For this, type "manhattan distance" or "manhattan.
 Math bot will ask for a list of xs and ys and will calculate the manhattan distance.
 ### Gaussian Probability (Normal Distribution)
+    - For this, type "gaussian probability" or "gaussian".
 Math bot will find the probability density at a particular point given a list of numbers
 ### Gaussian Mixture Model
+    - For this, type "gaussian mixure model" or "mixture".
 Math bot estimates parameters of a Gaussian mixture model probability distribution when you give it some data.
+It will plot all the data in blue, and then the means in pink on a scatter graph.
 Currently only supports 2 arrays (xs and ys for example)
 Please read this documentation for more information: https://scikit-learn.org/stable/modules/mixture.html#gmm 
 ## Upcoming is:
