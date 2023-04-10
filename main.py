@@ -2,10 +2,13 @@ import matplotlib
 import numpy as np
 import scipy
 import pandas as pd
-from sklearn. mixture import GaussianMixture
+from sklearn.mixture import GaussianMixture
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt
+import string
+from itertools import combinations
 import matplotlib.pyplot as plt
+
 # A python program that asks what you would like to do, and can calculate:
 possible = """
 Accuracy
@@ -23,9 +26,10 @@ Gaussian Probability (Normal Distribution)
     - Will find the probability density at a particular point given a list of numbers
 Gaussian Mixture Model
     - estimates parameters of a Gaussian mixture model probability distribution
+Bayes Theorem
+
 
 Upcoming is:
-Bayes Theorem
 KNN
 Linear Regression
     - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
@@ -35,7 +39,6 @@ Naive Bayes Classifier
 
 Type END to quit.
 """
-
 
 print("Starting up")
 
@@ -125,12 +128,12 @@ globalys = np.array([])
 arr = np.array([])
 pointA = (0, 0)
 pointB = (0, 0)
-a = 0
-while a == 0:
+running = 0
+while running == 0:
     user = input("What do you need to calculate?").lower().strip()
     if user == "end":
         print("You have chosen to end the program. Goodbye.")
-        a = 1
+        running = 1
     elif user == "accuracy":
         print("You have chosen accuracy")
         correct = int(input("What are the number of correctly classified data points?"))
@@ -171,7 +174,7 @@ while a == 0:
         xs, ys = getxys()
         uniform = np.sum(ys) / ys.shape[0]
         distance = 0
-        for i in range(len(xs.shape[0]) -1):
+        for i in range(len(xs.shape[0]) - 1):
             distance += (xs[i] - ys[i]) ** 2
         answer = sqrt(distance)
         print("Answer: ", answer)
@@ -223,8 +226,9 @@ while a == 0:
         # thanks to https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
         for i, (X, Y) in enumerate(means):
             plt.scatter(X, Y, color='pink')
+            # c=kmm.labels_, cmap='cool'
         plt.show()
-        more = input("Would you like to predict labels for more data? Y/N").lower().strip()
+        more = input("Would you like to predict labels for more data? Y/N ").lower().strip()
         if more == "y":
             print("Please enter the TESTING data")
             testXs, testYs = getxys()
@@ -232,6 +236,56 @@ while a == 0:
             results = gmm.predict(data)
             print("Labels: ", results)
             plt.show()
+    elif user == "bayes":
+        additional = input(
+            "What do you need to calculate? Prosterior (p), Likelihood (l), prior (p), Marginal (m) ").lower().strip()
+        if additional == "p":
+            theorem = input("Do you know the likelihood, Prior and Marginal? Y/N ").lower().strip()
+            if theorem == "y":
+                likelihood = float(input("Please now type the likelihood: "))
+                prior = float(input("prior: "))
+                marginal = float(input("Marginal: "))
+                answer = (likelihood * prior) / marginal
+                print("The prosterior is: ", answer)
+            elif theorem == "n":
+                equation = input("Please write the joint equation in full: ").strip()
+                equation = equation.split("P")
+                equation.pop(
+                    0)  # For some reason it always had an empty element in the start, so let's get rid of that.
+                events = set().union(*equation)
+                # Get it so only the events are in events (naturally)
+                events.discard(")")
+                events.discard("(")
+                events.discard(",")
+                events.discard("|")
+                print("equation: ", equation)  # temp
+                print("Events: ", events)  # temp
+                thingsToSet = list()
+                setting = input(
+                    "Would you like to set any particular events e.g. P(W=1), If yes, type 'W=1' or just say 'N' ")
+                if setting != "n":
+                    thingsToSet = list(set().union(*setting))
+                    for event in events.copy():  # becasue we're deleting things
+                        for thing in thingsToSet:
+                            if event == thing:
+                                events.discard(event)  # we just need to not iterate through its options for now
+                # Now, events contains the things we need to run through
+                additions = []
+                partialResult = 1
+                number = [0, 1]
+                value = len(events) * 2
+                possibilities = combinations(number, value)
+                print(list(possibilities))
+                for possibility in possibilities:
+                    print("Probabilities of {0}: {0} ".format(events, possibility))
+                    for part in equation:
+                        partialResult = partialResult * float(input("What is the probability of P({0})".format(part)))
+                    additions.append(partialResult)
+                firstPart = np.sum(additions)
+                print(firstPart)
+            else:
+                print("Sorry, I didn't understand, please try again.")
     else:
-        print("Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. Capitalisation doesn't matter.")
+        print(
+            "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. Capitalisation doesn't matter.")
         print("I can currently calculate the following: ", possible)
