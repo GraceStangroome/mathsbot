@@ -50,10 +50,15 @@ Math bot will find the probability density at a particular point given a list of
 Math bot estimates parameters of a Gaussian mixture model probability distribution when you give it some data.
 It will plot all the data in blue, and then the means in pink on a scatter graph.
 Currently only supports 2 arrays (xs and ys for example)
-Please read this documentation for more information: https://scikit-learn.org/stable/modules/mixture.html#gmm 
+Please read this documentation for more information: https://scikit-learn.org/stable/modules/mixture.html#gmm
+### Bayes Theorem
+    - For this, type "bayes".
+It uses Bayes' theorem to allow you to calculate the prosterior via likelihood, prior and marginal (you can also ask for these things to be calculated) OR the joint probability.
+For the joint probability, all you need to tell MathBot is the equation e.g. P(C)P(S|C)P(R|C)P(W|S,R) which can be derived from the bayesian network that you should have been given. It then steps through all of the probabilities you should also know (it will likely give you redundant information sometimes, you can ignore this), and then provide you with the solution.
+Therefore, it kind of just holds your hand through the calculation of this, but I just think that's neat.
+
 ## Upcoming is:
 More details always coming soon!
-### Bayes Theorem
 ### KNN
 ### Linear Regression
 This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared

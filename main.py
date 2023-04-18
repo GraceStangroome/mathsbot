@@ -42,11 +42,43 @@ Type END to quit.
 
 print("Starting up")
 
-# Code provided by Matthew Nagy, the CS chad
+
+# Function provided by Matthew Nagy, the CS chad
 def getPossibilities(inList):
     numSize = 2 ** len(inList)
-    possibilities = [[(i >> j) & 0x1 > 0 for j in range(len(inList))] for i in range(numSize)]
-    return possibilities
+    result = [[(i >> j) & 0x1 > 0 for j in range(len(inList))] for i in range(numSize)]
+    return result
+
+
+def clean(setToClean):
+    result = set().union(*setToClean)
+    # Get it so only the events are in events (naturally)
+    result.discard(")")
+    result.discard("(")
+    result.discard(",")
+    result.discard("|")
+    return result
+
+
+def removeStuff(items, toRemove):
+    for item in items.copy():  # because we're deleting things
+        for thing in toRemove:
+            if item == thing:
+                items.discard(item)  # we just need to not iterate through its options for now
+    return items
+
+
+def calculateProbabilities(tofind, found):
+    additions = []
+    partialResult = 1
+    possibilities = getPossibilities(tofind)
+    for possibility in possibilities:
+        for part in equation:
+            partialResult = partialResult * float(input("What is the probability of P{0} given {1} is {2} and {3} "
+                                                        .format(part, tofind, possibility, found)))
+        additions.append(partialResult)
+    result = np.sum(additions)
+    return result
 
 def usesaved():
     if globalsExist:
@@ -243,7 +275,7 @@ while running == 0:
             plt.show()
     elif user == "bayes":
         additional = input(
-            "What do you need to calculate? Prosterior (p), Likelihood (l), prior (p), Marginal (m) ").lower().strip()
+            "What do you need to calculate? Prosterior (p), Likelihood (l), prior (r), Marginal (m) ").lower().strip()
         if additional == "p":
             theorem = input("Do you know the likelihood, Prior and Marginal? Y/N ").lower().strip()
             if theorem == "y":
@@ -256,34 +288,41 @@ while running == 0:
                 equation = input("Please write the joint equation in full: ").strip()
                 equation = equation.split("P")
                 equation.pop(0)  # For some reason it always had an empty element in the start, so let's get rid of that
-                events = set().union(*equation)
-                # Get it so only the events are in events (naturally)
-                events.discard(")")
-                events.discard("(")
-                events.discard(",")
-                events.discard("|")
-                thingsToSet = list()
-                setting = input(
-                    "Would you like to set any particular events e.g. P(W=1), If yes, type 'W=1' or just say 'N' ") # TODO: Add something here that instead gets the posterior the user is looking to calculate, and therefore auto calculates this instead
-                if setting != "n":
-                    thingsToSet = list(set().union(*setting))
-                    for event in events.copy():  # because we're deleting things
-                        for thing in thingsToSet:
-                            if event == thing:
-                                events.discard(event)  # we just need to not iterate through its options for now
+                events = clean(equation)
+                setting = set(input(
+                    "What is the posterior you want to calculate? e.g. (W|S)"))
+                thingsToSet = list(clean(setting))
+                toSetNumerator = thingsToSet[0] + " = 1 and " + thingsToSet[1] + " = 1"
+                toSetDenominator = thingsToSet[1] + " = 1"
+                numeratEvents = removeStuff(events, thingsToSet)
+                denomEvents = removeStuff(events, thingsToSet[1])
                 # Now, events contains the things we need to run through
-                additions = []
-                partialResult = 1
-                possibilities = getPossibilities(events)
-                for possibility in possibilities:
-                    for part in equation:
-                        partialResult = partialResult * float(input("What is the probability of P{0} given {1} is {2} and {3}"
-                                                                    .format(part, events, possibility, thingsToSet)))
-                    additions.append(partialResult)
-                firstPart = np.sum(additions)
-                print(firstPart)
+                numerator = calculateProbabilities(numeratEvents, toSetNumerator)
+                denominator = calculateProbabilities(denomEvents, toSetDenominator)
+                result = numerator / denominator
+                print("Result = ", result)
             else:
                 print("Sorry, I didn't understand, please try again.")
+        if additional == "l":
+            posterior = float(input("Please now type the posterior: "))
+            prior = float(input("prior: "))
+            marginal = float(input("Marginal: "))
+            answer = (marginal * posterior) / prior
+            print("The likelihood is: ", answer)
+        if additional == "m":
+            posterior = float(input("Please now type the posterior: "))
+            prior = float(input("prior: "))
+            likelihood = float(input("likelihood: "))
+            answer = (likelihood * prior) / posterior
+            print("The marginal is: ", answer)
+        if additional == "r":
+            posterior = float(input("Please now type the posterior: "))
+            marginal = float(input("prior: "))
+            likelihood = float(input("likelihood: "))
+            answer = (marginal * posterior) / likelihood
+            print("The prior is: ", answer)
+        else:
+            print("Sorry, I didn't understand.")
     else:
         print(
             "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "
