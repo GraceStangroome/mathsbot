@@ -2,10 +2,13 @@ import matplotlib
 import numpy as np
 import scipy
 import pandas as pd
-from sklearn. mixture import GaussianMixture
+from sklearn.mixture import GaussianMixture
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt
+import string
+from itertools import combinations
 import matplotlib.pyplot as plt
+
 # A python program that asks what you would like to do, and can calculate:
 possible = """
 Accuracy
@@ -23,9 +26,10 @@ Gaussian Probability (Normal Distribution)
     - Will find the probability density at a particular point given a list of numbers
 Gaussian Mixture Model
     - estimates parameters of a Gaussian mixture model probability distribution
+Bayes Theorem
+
 
 Upcoming is:
-Bayes Theorem
 KNN
 Linear Regression
     - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
@@ -36,9 +40,45 @@ Naive Bayes Classifier
 Type END to quit.
 """
 
-
 print("Starting up")
 
+
+# Function provided by Matthew Nagy, the CS chad
+def getPossibilities(inList):
+    numSize = 2 ** len(inList)
+    result = [[(i >> j) & 0x1 > 0 for j in range(len(inList))] for i in range(numSize)]
+    return result
+
+
+def clean(setToClean):
+    result = set().union(*setToClean)
+    # Get it so only the events are in events (naturally)
+    result.discard(")")
+    result.discard("(")
+    result.discard(",")
+    result.discard("|")
+    return result
+
+
+def removeStuff(items, toRemove):
+    for item in items.copy():  # because we're deleting things
+        for thing in toRemove:
+            if item == thing:
+                items.discard(item)  # we just need to not iterate through its options for now
+    return items
+
+
+def calculateProbabilities(tofind, found):
+    additions = []
+    partialResult = 1
+    possibilities = getPossibilities(tofind)
+    for possibility in possibilities:
+        for part in equation:
+            partialResult = partialResult * float(input("What is the probability of P{0} given {1} is {2} and {3} "
+                                                        .format(part, tofind, possibility, found)))
+        additions.append(partialResult)
+    result = np.sum(additions)
+    return result
 
 def usesaved():
     if globalsExist:
@@ -125,12 +165,12 @@ globalys = np.array([])
 arr = np.array([])
 pointA = (0, 0)
 pointB = (0, 0)
-a = 0
-while a == 0:
+running = 0
+while running == 0:
     user = input("What do you need to calculate?").lower().strip()
     if user == "end":
         print("You have chosen to end the program. Goodbye.")
-        a = 1
+        running = 1
     elif user == "accuracy":
         print("You have chosen accuracy")
         correct = int(input("What are the number of correctly classified data points?"))
@@ -171,7 +211,7 @@ while a == 0:
         xs, ys = getxys()
         uniform = np.sum(ys) / ys.shape[0]
         distance = 0
-        for i in range(len(xs.shape[0]) -1):
+        for i in range(len(xs.shape[0]) - 1):
             distance += (xs[i] - ys[i]) ** 2
         answer = sqrt(distance)
         print("Answer: ", answer)
@@ -223,8 +263,9 @@ while a == 0:
         # thanks to https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
         for i, (X, Y) in enumerate(means):
             plt.scatter(X, Y, color='pink')
+            # c=kmm.labels_, cmap='cool'
         plt.show()
-        more = input("Would you like to predict labels for more data? Y/N").lower().strip()
+        more = input("Would you like to predict labels for more data? Y/N ").lower().strip()
         if more == "y":
             print("Please enter the TESTING data")
             testXs, testYs = getxys()
@@ -232,6 +273,58 @@ while a == 0:
             results = gmm.predict(data)
             print("Labels: ", results)
             plt.show()
+    elif user == "bayes":
+        additional = input(
+            "What do you need to calculate? Prosterior (p), Likelihood (l), prior (r), Marginal (m) ").lower().strip()
+        if additional == "p":
+            theorem = input("Do you know the likelihood, Prior and Marginal? Y/N ").lower().strip()
+            if theorem == "y":
+                likelihood = float(input("Please now type the likelihood: "))
+                prior = float(input("prior: "))
+                marginal = float(input("Marginal: "))
+                answer = (likelihood * prior) / marginal
+                print("The prosterior is: ", answer)
+            elif theorem == "n":
+                equation = input("Please write the joint equation in full: ").strip()
+                equation = equation.split("P")
+                equation.pop(0)  # For some reason it always had an empty element in the start, so let's get rid of that
+                events = clean(equation)
+                setting = set(input(
+                    "What is the posterior you want to calculate? e.g. (W|S)"))
+                thingsToSet = list(clean(setting))
+                toSetNumerator = thingsToSet[0] + " = 1 and " + thingsToSet[1] + " = 1"
+                toSetDenominator = thingsToSet[1] + " = 1"
+                numeratEvents = removeStuff(events, thingsToSet)
+                denomEvents = removeStuff(events, thingsToSet[1])
+                # Now, events contains the things we need to run through
+                numerator = calculateProbabilities(numeratEvents, toSetNumerator)
+                denominator = calculateProbabilities(denomEvents, toSetDenominator)
+                result = numerator / denominator
+                print("Result = ", result)
+            else:
+                print("Sorry, I didn't understand, please try again.")
+        if additional == "l":
+            posterior = float(input("Please now type the posterior: "))
+            prior = float(input("prior: "))
+            marginal = float(input("Marginal: "))
+            answer = (marginal * posterior) / prior
+            print("The likelihood is: ", answer)
+        if additional == "m":
+            posterior = float(input("Please now type the posterior: "))
+            prior = float(input("prior: "))
+            likelihood = float(input("likelihood: "))
+            answer = (likelihood * prior) / posterior
+            print("The marginal is: ", answer)
+        if additional == "r":
+            posterior = float(input("Please now type the posterior: "))
+            marginal = float(input("prior: "))
+            likelihood = float(input("likelihood: "))
+            answer = (marginal * posterior) / likelihood
+            print("The prior is: ", answer)
+        else:
+            print("Sorry, I didn't understand.")
     else:
-        print("Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. Capitalisation doesn't matter.")
+        print(
+            "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "
+            "Capitalisation doesn't matter.")
         print("I can currently calculate the following: ", possible)
