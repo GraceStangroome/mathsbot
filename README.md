@@ -88,7 +88,7 @@ Sometimes something strange can happen where if you copy and paste the equation 
 + = add
 - = subtract or negative
 ```
-i.e. $ −0.3x^3 + 2x^2 − x + 12 $ is written as ```−0.3*x**3+2*x**2−x+12```
+i.e. $−0.3x^3 + 2x^2 − x + 12$ is written as ```−0.3*x**3+2*x**2−x+12```
 
 ## Upcoming is:
 More details always coming soon!
