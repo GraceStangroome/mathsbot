@@ -28,8 +28,9 @@ Gaussian Mixture Model
 Bayes Theorem (incl. joint probability)
 Point Crossover
 Bit Swap
-Upcoming is:
 Binary to Decimal
+
+Upcoming is:
 Calculating the fitness
     - Input a fitness function and some values and calculate the fitness
 KNN
@@ -373,11 +374,13 @@ while running == 0:
     elif user == "binary conversion":
         print("You have selected binary to decimal conversion")
         binary = input("Please enter your binary number: ")
+        # https://pythonguides.com/python-convert-binary-to-decimal/
         result = int(binary, 2)
         print("The Decimal value is: ", result)
     elif user == "decimal conversion":
         print("You have selected decimal to binary conversion")
         decimal = int(input("Please enter your decimal number: "))
+        # https://stackoverflow.com/questions/10411085/converting-integer-to-binary-in-python
         result = '{0:08b}'.format(decimal)
         print("The binary value is: ", result)
     else:
