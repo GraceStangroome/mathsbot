@@ -27,10 +27,9 @@ Gaussian Mixture Model
     - estimates parameters of a Gaussian mixture model probability distribution
 Bayes Theorem (incl. joint probability)
 Point Crossover
-
+Bit Swap
 Upcoming is:
 Binary to Decimal
-Bit Swap
 Calculating the fitness
     - Input a fitness function and some values and calculate the fitness
 KNN
@@ -160,6 +159,27 @@ def getpoints():
         b = toarray(input("Enter co-ordinates of the second point e.g. '5,7'"))
         savevalues(a, b, "points")
     return a, b
+
+
+def getParents():
+    fault = True
+    while fault:
+        a = list(input("Please now enter parent A (or the first parent): "))
+        b = list(input("Please now enter parent B (or the second parent): "))
+        if len(a) != len(b):  # User error catching
+            print("Parent A and B MUST be the same length. Please try again.")
+        else:
+            fault = False
+    return a, b
+
+
+def getPoints():
+    numOfPoints = int(input("How many points are you considering e.g. '2': "))
+    thePoints = []
+    for num in range(numOfPoints):
+        point = int(input("Please now enter point {0}: ".format(num)).strip())
+        thePoints.append(point)
+    return thePoints
 
 
 globalsExist = False
@@ -328,26 +348,28 @@ while running == 0:
             print("Sorry, I didn't understand.")
     elif user == "point crossover":
         print("You have selected point crossover for evolutionary algorithms")
-        fault = True
-        while fault:
-            parentA = list(input("Please now enter parent A (or the first parent): "))
-            parentB = list(input("Please now enter parent B (or the second parent): "))
-            numOfPoints = int(input("How many point crossovers are you doing e.g. '2': "))
-            if len(parentA) != len(parentB):  # User error catching
-                print("Parent A and B MUST be the same length. Please try again.")
-            else:
-                fault = False
-        points = []
+        parentA, parentB = getParents()
+        points = getPoints()
         # Thanks to code from https://www.geeksforgeeks.org/python-single-point-crossover-in-genetic-algorithm/
-        for i in range(numOfPoints):
-            point = int(input("Please now enter point {0}: ".format(i)).strip())
-            points.append(point)
+        for i in range(len(points)):
             for gene in range(points[i], len(parentA)):  # parent A and B should be the same length
                 parentA[gene], parentB[gene] = parentB[gene], parentA[gene]
-        parentA = ''.join(parentA)
+        parentA = ''.join(parentA)  # Makes it look like a string in the output
         parentB = ''.join(parentB)
         print("Child of A is: ", parentA)
         print("Child of B is: ", parentB)
+    elif user == "swap mutation":
+        print("You have selected swap crossover for evolutionary algorithms")
+        print("Note: This only works for an even number of swap locations.")
+        parentA, parentB = getParents()
+        points = getPoints()
+        for i in range(len(points) - 1):
+            parentA[points[i]], parentA[points[i+1]] = parentA[points[i+1]], parentA[points[i]]
+            parentB[points[i]], parentB[points[i+1]] = parentB[points[i+1]], parentB[points[i]]
+        parentA = ''.join(parentA)  # Makes it look like a string in the output
+        parentB = ''.join(parentB)
+        print("Child of A is now: ", parentA)
+        print("Child of B is now: ", parentB)
     else:
         print(
             "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "

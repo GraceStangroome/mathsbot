@@ -56,6 +56,14 @@ Please read this documentation for more information: https://scikit-learn.org/st
 It uses Bayes' theorem to allow you to calculate the prosterior via likelihood, prior and marginal (you can also ask for these things to be calculated) OR the joint probability.
 For the joint probability, all you need to tell MathBot is the equation e.g. P(C)P(S|C)P(R|C)P(W|S,R) which can be derived from the bayesian network that you should have been given. It then steps through all of the probabilities you should also know (it will likely give you redundant information sometimes, you can ignore this), and then provide you with the solution.
 Therefore, it kind of just holds your hand through the calculation of this, but I just think that's neat.
+### Point Crossover
+     - for this, type "point crossover"
+Works with binary and letters. Mathbot asks you for the parents and the number of cross over points, and then the cross over points themselves. 
+Then it just does the point cross over. If you have denary numbers you would need to convert them 
+### Swap Mutation
+     - for this, type "swap mutation"
+Works with binary and letters. Mathbot asks you for the parents and the number of swaps you want to make, and then the indexes of the swap(s) themselves. 
+Then it just does the swap mutation. If you have denary numbers you would need to convert them
 
 ## Upcoming is:
 More details always coming soon!
