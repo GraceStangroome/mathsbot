@@ -59,11 +59,16 @@ Therefore, it kind of just holds your hand through the calculation of this, but 
 ### Point Crossover
      - for this, type "point crossover"
 Works with binary and letters. Mathbot asks you for the parents and the number of cross over points, and then the cross over points themselves. 
-Then it just does the point cross over. If you have denary numbers you would need to convert them 
+Then it just does the point cross over. If you have decimal numbers you would need to convert them to binary.
 ### Swap Mutation
      - for this, type "swap mutation"
-Works with binary and letters. Mathbot asks you for the parents and the number of swaps you want to make, and then the indexes of the swap(s) themselves. 
-Then it just does the swap mutation. If you have denary numbers you would need to convert them
+Works with binary and letters. Mathbot asks you for the parents and the number of swaps you want to make (this MUST be an even number), and then the indexes of the swap(s) themselves. 
+Then it just does the swap mutation. If you have decimal numbers you would need to convert them to binary.
+### Binary and Deimal Conversion
+    - for binary to decimal, type "binary conversion". For decimal to binary, type "decimal conversion"
+Converts from binary to decimal and vice versa.
+
+
 
 ## Upcoming is:
 More details always coming soon!

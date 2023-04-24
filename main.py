@@ -370,6 +370,16 @@ while running == 0:
         parentB = ''.join(parentB)
         print("Child of A is now: ", parentA)
         print("Child of B is now: ", parentB)
+    elif user == "binary conversion":
+        print("You have selected binary to decimal conversion")
+        binary = input("Please enter your binary number: ")
+        result = int(binary, 2)
+        print("The Decimal value is: ", result)
+    elif user == "decimal conversion":
+        print("You have selected decimal to binary conversion")
+        decimal = int(input("Please enter your decimal number: "))
+        result = '{0:08b}'.format(decimal)
+        print("The binary value is: ", result)
     else:
         print(
             "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "
