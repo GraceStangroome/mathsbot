@@ -6,7 +6,6 @@ from sklearn.mixture import GaussianMixture
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt
 import string
-from itertools import combinations
 import matplotlib.pyplot as plt
 
 # A python program that asks what you would like to do, and can calculate:
@@ -26,16 +25,20 @@ Gaussian Probability (Normal Distribution)
     - Will find the probability density at a particular point given a list of numbers
 Gaussian Mixture Model
     - estimates parameters of a Gaussian mixture model probability distribution
-Bayes Theorem
-
+Bayes Theorem (incl. joint probability)
+Point Crossover
 
 Upcoming is:
+Binary to Decimal
+Bit Swap
+Calculating the fitness
+    - Input a fitness function and some values and calculate the fitness
 KNN
 Linear Regression
     - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
 Naive Bayes Classifier 
     - Calculates which class a new data point will be in
-
+    
 
 Type END to quit.
 """
@@ -167,7 +170,7 @@ pointA = (0, 0)
 pointB = (0, 0)
 running = 0
 while running == 0:
-    user = input("What do you need to calculate?").lower().strip()
+    user = input("What do you need to calculate? ").lower().strip()
     if user == "end":
         print("You have chosen to end the program. Goodbye.")
         running = 1
@@ -323,6 +326,28 @@ while running == 0:
             print("The prior is: ", answer)
         else:
             print("Sorry, I didn't understand.")
+    elif user == "point crossover":
+        print("You have selected point crossover for evolutionary algorithms")
+        fault = True
+        while fault:
+            parentA = list(input("Please now enter parent A (or the first parent): "))
+            parentB = list(input("Please now enter parent B (or the second parent): "))
+            numOfPoints = int(input("How many point crossovers are you doing e.g. '2': "))
+            if len(parentA) != len(parentB):  # User error catching
+                print("Parent A and B MUST be the same length. Please try again.")
+            else:
+                fault = False
+        points = []
+        # Thanks to code from https://www.geeksforgeeks.org/python-single-point-crossover-in-genetic-algorithm/
+        for i in range(numOfPoints):
+            point = int(input("Please now enter point {0}: ".format(i)).strip())
+            points.append(point)
+            for gene in range(points[i], len(parentA)):  # parent A and B should be the same length
+                parentA[gene], parentB[gene] = parentB[gene], parentA[gene]
+        parentA = ''.join(parentA)
+        parentB = ''.join(parentB)
+        print("Child of A is: ", parentA)
+        print("Child of B is: ", parentB)
     else:
         print(
             "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "
