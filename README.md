@@ -67,8 +67,28 @@ Then it just does the swap mutation. If you have decimal numbers you would need 
 ### Binary and Deimal Conversion
     - for binary to decimal, type "binary conversion". For decimal to binary, type "decimal conversion"
 Converts from binary to decimal and vice versa.
-
-
+### Fitness of a function
+    - for this, type "fitness"
+Mathbot will ask you for a fitness function and some values. It will then rescale the values if required.
+Mathbot will then output the:
+* "raw fitness" for the results that come straight from the fitness function,
+* "rescaled" for any rescaled values (mathbot will also tell you if this step is not required), and finally
+* "relative fitness" for the relative fitness. 
+ 
+IMPORTANT NOTE: The fitness function must be typed with the following rules:
+```
+No spaces
+The equation must be written in terms of x e.g. x**2 is okay but y**2 is not.
+Sometimes something strange can happen where if you copy and paste the equation from somewhere else,
+ Mathbot has some kind of breakdown. I'm not really sure how to prevent it so I reccomend typing the
+ equation out yourself with the following syntax:
+* = multuply
+\ = divide
+** = power
++ = add
+- = subtract or negative
+```
+i.e. $ −0.3 *x**3 + 2*x**2 − x + 12 $ is written as ```−0.3*x**3+2*x**2−x+12```
 
 ## Upcoming is:
 More details always coming soon!

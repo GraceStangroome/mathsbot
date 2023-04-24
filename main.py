@@ -5,8 +5,9 @@ import pandas as pd
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt
-import string
+import numexpr
 import matplotlib.pyplot as plt
+import string
 
 # A python program that asks what you would like to do, and can calculate:
 possible = """
@@ -29,10 +30,9 @@ Bayes Theorem (incl. joint probability)
 Point Crossover
 Bit Swap
 Binary to Decimal
+Calculating the fitness
 
 Upcoming is:
-Calculating the fitness
-    - Input a fitness function and some values and calculate the fitness
 KNN
 Linear Regression
     - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
@@ -82,6 +82,7 @@ def calculateProbabilities(tofind, found):
         additions.append(partialResult)
     result = np.sum(additions)
     return result
+
 
 def usesaved():
     if globalsExist:
@@ -183,208 +184,275 @@ def getPoints():
     return thePoints
 
 
+def getValues():
+    numOfValues = int(input("How many solutions are you calculating e.g. '5': "))
+    theValues = []
+    for num in range(numOfValues):
+        point = float(input("Please now enter solution {0}: ".format(num)).strip())
+        theValues.append(point)
+    return theValues
+
+
+# x here is a global variable now, that numexpr needs
+def func(expr, x, a):
+    return numexpr.evaluate(expr)
+
+
+def main():
+    running = 0
+    while running == 0:
+        user = input("What do you need to calculate? ").lower().strip()
+        if user == "end":
+            print("You have chosen to end the program. Goodbye.")
+            running = 1
+        elif user == "accuracy":
+            print("You have chosen accuracy")
+            correct = int(input("What are the number of correctly classified data points?"))
+            total = int(input("What are the total number of datapoints?"))
+            answer = correct / total
+            print("Answer: ", answer)
+        elif user == "precision":
+            truePos = int(input("Number of true positives"))
+            falsePos = int(input("Number of false positives"))
+            answer = truePos / (truePos + falsePos)
+            print("Answer: ", answer)
+        elif user == "recall":
+            truePos = int(input("Number of true positives"))
+            falseNeg = int(input("Number of false negatives"))
+            answer = truePos / (truePos + falseNeg)
+            print("Answer: ", answer)
+        elif user == "mse":
+            print("You have chosen Mean Squared Error")
+            xs, ys = getxys()
+            mse = mean_squared_error(xs, ys)
+            print("Answer: ", mse)
+        elif user == "mae":
+            print("You have chosen Mean absolute Error")
+            xs, ys = getxys()
+            mse = mean_absolute_error(xs, ys)
+            print("Answer: ", mse)
+        elif user == "f1":
+            print("You have chosen F1")
+            truePos = int(input("Number of true positives"))
+            falseNeg = int(input("Number of false negatives"))
+            falsePos = int(input("Number of false positives"))
+            recall = truePos / (truePos + falseNeg)
+            precision = truePos / (truePos + falsePos)
+            answer = 2 * ((precision * recall) / (precision + recall))
+            print("Answer: ", answer)
+        elif user == "knn weights":
+            print("You have chosen KNN Weights")
+            xs, ys = getxys()
+            uniform = np.sum(ys) / ys.shape[0]
+            distance = 0
+            for i in range(len(xs.shape[0]) - 1):
+                distance += (xs[i] - ys[i]) ** 2
+            answer = sqrt(distance)
+            print("Answer: ", answer)
+        elif user == "sd":
+            print("You have chosen standard deviation")
+            array = getarray()
+            answer = np.std(array)
+            print("Answer: ", answer)
+        elif user == "mean":
+            print("You have chosen mean")
+            array = getarray()
+            answer = np.mean(array)
+            print("Answer: ", answer)
+        # thanks to https://datagy.io/python-euclidian-distance/
+        elif user == "euclidean distance" or user == "euclidean":
+            print("You have chosen Euclidean Distance")
+            x, y = getpoints()
+            squaredDistance = np.sum(np.square(x - y))
+            answer = np.sqrt(squaredDistance)
+            print("Answer: ", answer)
+        # thanks to https://math.stackexchange.com/questions/139600/how-do-i-calculate-euclidean-and-manhattan-distance-by-hand
+        elif user == "manhattan distance" or user == "manhattan":
+            print("You have chosen Manhattan Distance")
+            x, y = getpoints()
+            distance = abs(x[0] - y[0]) + abs(x[1] - y[1])
+            print("Answer: ", distance)
+        # thanks to https://stackoverflow.com/questions/12412895/how-to-calculate-probability-in-a-normal-distribution-given-mean-standard-devi
+        elif user == "gaussian probability" or user == "gaussian":
+            print("You have chosen Gaussian probability")
+            value = int(input("What value would you like the probability density to be caluclated at?: "))
+            array = getarray()
+            mean = np.mean(array)
+            sd = np.std(array)
+            answer = scipy.stats.norm(mean, sd).pdf(value)
+            print("Probability Density: ", answer)
+        elif user == "gaussian mixture model" or user == "mixture":
+            print("You have chosen Gaussian Mixture Model")
+            print("Please enter the TRAINING data")
+            xs, ys = getxys()
+            data = pd.DataFrame({'xs': xs, 'ys': ys})
+            gmm = GaussianMixture(n_components=3)
+            gmm.fit(data)
+            plt.figure()
+            plt.scatter(xs, ys)
+            print("Weights: ", gmm.weights_)
+            means = gmm.means_
+            print("Means: ", means)
+            print("Co-variances: ", gmm.covariances_)
+            # thanks to https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
+            for i, (X, Y) in enumerate(means):
+                plt.scatter(X, Y, color='pink')
+                # c=kmm.labels_, cmap='cool'
+            plt.show()
+            more = input("Would you like to predict labels for more data? Y/N ").lower().strip()
+            if more == "y":
+                print("Please enter the TESTING data")
+                testXs, testYs = getxys()
+                data = pd.DataFrame({'xs': testXs, 'ys': testYs})
+                results = gmm.predict(data)
+                print("Labels: ", results)
+                plt.show()
+        elif user == "bayes":
+            additional = input(
+                "What do you need to calculate? Prosterior (p), Likelihood (l), prior (r), Marginal (m) ").lower().strip()
+            if additional == "p":
+                theorem = input("Do you know the likelihood, Prior and Marginal? Y/N ").lower().strip()
+                if theorem == "y":
+                    likelihood = float(input("Please now type the likelihood: "))
+                    prior = float(input("prior: "))
+                    marginal = float(input("Marginal: "))
+                    answer = (likelihood * prior) / marginal
+                    print("The prosterior is: ", answer)
+                elif theorem == "n":
+                    equation = input("Please write the joint equation in full: ").strip()
+                    equation = equation.split("P")
+                    equation.pop(0)  # For some reason it always had an empty element in the start, so let's get rid of that
+                    events = clean(equation)
+                    setting = set(input(
+                        "What is the posterior you want to calculate? e.g. (W|S)"))
+                    thingsToSet = list(clean(setting))
+                    toSetNumerator = thingsToSet[0] + " = 1 and " + thingsToSet[1] + " = 1"
+                    toSetDenominator = thingsToSet[1] + " = 1"
+                    numeratEvents = removeStuff(events, thingsToSet)
+                    denomEvents = removeStuff(events, thingsToSet[1])
+                    # Now, events contains the things we need to run through
+                    numerator = calculateProbabilities(numeratEvents, toSetNumerator)
+                    denominator = calculateProbabilities(denomEvents, toSetDenominator)
+                    result = numerator / denominator
+                    print("Result = ", result)
+                else:
+                    print("Sorry, I didn't understand, please try again.")
+            if additional == "l":
+                posterior = float(input("Please now type the posterior: "))
+                prior = float(input("prior: "))
+                marginal = float(input("Marginal: "))
+                answer = (marginal * posterior) / prior
+                print("The likelihood is: ", answer)
+            if additional == "m":
+                posterior = float(input("Please now type the posterior: "))
+                prior = float(input("prior: "))
+                likelihood = float(input("likelihood: "))
+                answer = (likelihood * prior) / posterior
+                print("The marginal is: ", answer)
+            if additional == "r":
+                posterior = float(input("Please now type the posterior: "))
+                marginal = float(input("prior: "))
+                likelihood = float(input("likelihood: "))
+                answer = (marginal * posterior) / likelihood
+                print("The prior is: ", answer)
+            else:
+                print("Sorry, I didn't understand.")
+        elif user == "point crossover":
+            print("You have selected point crossover for evolutionary algorithms")
+            parentA, parentB = getParents()
+            points = getPoints()
+            # Thanks to code from https://www.geeksforgeeks.org/python-single-point-crossover-in-genetic-algorithm/
+            for i in range(len(points)):
+                for gene in range(points[i], len(parentA)):  # parent A and B should be the same length
+                    parentA[gene], parentB[gene] = parentB[gene], parentA[gene]
+            parentA = ''.join(parentA)  # Makes it look like a string in the output
+            parentB = ''.join(parentB)
+            print("Child of A is: ", parentA)
+            print("Child of B is: ", parentB)
+        elif user == "swap mutation":
+            print("You have selected swap crossover for evolutionary algorithms")
+            print("Note: This only works for an even number of swap locations.")
+            parentA, parentB = getParents()
+            points = getPoints()
+            for i in range(len(points) - 1):
+                parentA[points[i]], parentA[points[i+1]] = parentA[points[i+1]], parentA[points[i]]
+                parentB[points[i]], parentB[points[i+1]] = parentB[points[i+1]], parentB[points[i]]
+            parentA = ''.join(parentA)  # Makes it look like a string in the output
+            parentB = ''.join(parentB)
+            print("Child of A is now: ", parentA)
+            print("Child of B is now: ", parentB)
+        elif user == "binary conversion" or user == "binary":
+            print("You have selected binary to decimal conversion")
+            binary = input("Please enter your binary number: ")
+            # https://pythonguides.com/python-convert-binary-to-decimal/
+            result = int(binary, 2)
+            print("The Decimal value is: ", result)
+        elif user == "decimal conversion" or user == "decimal":
+            print("You have selected decimal to binary conversion")
+            decimal = int(input("Please enter your decimal number: "))
+            # https://stackoverflow.com/questions/10411085/converting-integer-to-binary-in-python
+            result = '{0:08b}'.format(decimal)
+            print("The binary value is: ", result)
+        elif user == "fitness":
+            print("You have selected fitness proportionate selection")
+            # thank you to https://stackoverflow.com/questions/52596765/how-to-get-equation-from-input-in-python !!
+            rawEqn = input("Please enter the fitness equation: ")
+            inputs = getValues()
+            rawResults = []
+            needToRescale = False
+            for i in range(len(inputs)):
+                rawResult = func(rawEqn, inputs[i], 0)
+                rawResults.append(float(rawResult))
+                if rawResult < 0:
+                    needToRescale = True
+            print("Raw Results: ", rawResults)
+            using = rawResults
+            if needToRescale:
+                print("Rescaling...")
+                rescaledResults = []
+                smallestElem = min(rawResults) * -1
+                rescaleEqn = "x + a"
+                for i in range(len(rawResults)):
+                    rescaled = func(rescaleEqn, rawResults[i], smallestElem)
+                    rescaledResults.append(float(rescaled))
+                print("Rescaled Values: ", rescaledResults)
+                using = rescaledResults
+            else:
+                print("No need to rescale.")
+            total = sum(using)
+            relativeFitness = []
+            for i in range(len(using)):
+                result = using[i]/total
+                relativeFitness.append(result)
+            print("Relative Fitness: ", relativeFitness)
+            ranges = []
+            tops = [0]
+            for i in range(len(relativeFitness)):
+                if i == 0:
+                    a = 0
+                else:
+                    if relativeFitness[i-1] != 0:
+                        a = tops[i]
+                    else:
+                        a = tops[i-1]
+                top = a + relativeFitness[i]
+                if top == a:
+                    ranges.append(a)
+                else:
+                    ranges.append(str(a) + " to " + str(top))
+                tops.append(top)
+            print("Ranges: ", ranges)
+        else:
+            print(
+                "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "
+                "Capitalisation doesn't matter.")
+            print("I can currently calculate the following: ", possible)
+
+
 globalsExist = False
 globalxs = np.array([])
 globalys = np.array([])
 arr = np.array([])
 pointA = (0, 0)
 pointB = (0, 0)
-running = 0
-while running == 0:
-    user = input("What do you need to calculate? ").lower().strip()
-    if user == "end":
-        print("You have chosen to end the program. Goodbye.")
-        running = 1
-    elif user == "accuracy":
-        print("You have chosen accuracy")
-        correct = int(input("What are the number of correctly classified data points?"))
-        total = int(input("What are the total number of datapoints?"))
-        answer = correct / total
-        print("Answer: ", answer)
-    elif user == "precision":
-        truePos = int(input("Number of true positives"))
-        falsePos = int(input("Number of false positives"))
-        answer = truePos / (truePos + falsePos)
-        print("Answer: ", answer)
-    elif user == "recall":
-        truePos = int(input("Number of true positives"))
-        falseNeg = int(input("Number of false negatives"))
-        answer = truePos / (truePos + falseNeg)
-        print("Answer: ", answer)
-    elif user == "mse":
-        print("You have chosen Mean Squared Error")
-        xs, ys = getxys()
-        mse = mean_squared_error(xs, ys)
-        print("Answer: ", mse)
-    elif user == "mae":
-        print("You have chosen Mean absolute Error")
-        xs, ys = getxys()
-        mse = mean_absolute_error(xs, ys)
-        print("Answer: ", mse)
-    elif user == "f1":
-        print("You have chosen F1")
-        truePos = int(input("Number of true positives"))
-        falseNeg = int(input("Number of false negatives"))
-        falsePos = int(input("Number of false positives"))
-        recall = truePos / (truePos + falseNeg)
-        precision = truePos / (truePos + falsePos)
-        answer = 2 * ((precision * recall) / (precision + recall))
-        print("Answer: ", answer)
-    elif user == "knn weights":
-        print("You have chosen KNN Weights")
-        xs, ys = getxys()
-        uniform = np.sum(ys) / ys.shape[0]
-        distance = 0
-        for i in range(len(xs.shape[0]) - 1):
-            distance += (xs[i] - ys[i]) ** 2
-        answer = sqrt(distance)
-        print("Answer: ", answer)
-    elif user == "sd":
-        print("You have chosen standard deviation")
-        array = getarray()
-        answer = np.std(array)
-        print("Answer: ", answer)
-    elif user == "mean":
-        print("You have chosen mean")
-        array = getarray()
-        answer = np.mean(array)
-        print("Answer: ", answer)
-    # thanks to https://datagy.io/python-euclidian-distance/
-    elif user == "euclidean distance" or user == "euclidean":
-        print("You have chosen Euclidean Distance")
-        x, y = getpoints()
-        squaredDistance = np.sum(np.square(x - y))
-        answer = np.sqrt(squaredDistance)
-        print("Answer: ", answer)
-    # thanks to https://math.stackexchange.com/questions/139600/how-do-i-calculate-euclidean-and-manhattan-distance-by-hand
-    elif user == "manhattan distance" or user == "manhattan":
-        print("You have chosen Manhattan Distance")
-        x, y = getpoints()
-        distance = abs(x[0] - y[0]) + abs(x[1] - y[1])
-        print("Answer: ", distance)
-    # thanks to https://stackoverflow.com/questions/12412895/how-to-calculate-probability-in-a-normal-distribution-given-mean-standard-devi
-    elif user == "gaussian probability" or user == "gaussian":
-        print("You have chosen Gaussian probability")
-        value = int(input("What value would you like the probability density to be caluclated at?: "))
-        array = getarray()
-        mean = np.mean(array)
-        sd = np.std(array)
-        answer = scipy.stats.norm(mean, sd).pdf(value)
-        print("Probability Density: ", answer)
-    elif user == "gaussian mixture model" or user == "mixture":
-        print("You have chosen Gaussian Mixture Model")
-        print("Please enter the TRAINING data")
-        xs, ys = getxys()
-        data = pd.DataFrame({'xs': xs, 'ys': ys})
-        gmm = GaussianMixture(n_components=3)
-        gmm.fit(data)
-        plt.figure()
-        plt.scatter(xs, ys)
-        print("Weights: ", gmm.weights_)
-        means = gmm.means_
-        print("Means: ", means)
-        print("Co-variances: ", gmm.covariances_)
-        # thanks to https://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
-        for i, (X, Y) in enumerate(means):
-            plt.scatter(X, Y, color='pink')
-            # c=kmm.labels_, cmap='cool'
-        plt.show()
-        more = input("Would you like to predict labels for more data? Y/N ").lower().strip()
-        if more == "y":
-            print("Please enter the TESTING data")
-            testXs, testYs = getxys()
-            data = pd.DataFrame({'xs': testXs, 'ys': testYs})
-            results = gmm.predict(data)
-            print("Labels: ", results)
-            plt.show()
-    elif user == "bayes":
-        additional = input(
-            "What do you need to calculate? Prosterior (p), Likelihood (l), prior (r), Marginal (m) ").lower().strip()
-        if additional == "p":
-            theorem = input("Do you know the likelihood, Prior and Marginal? Y/N ").lower().strip()
-            if theorem == "y":
-                likelihood = float(input("Please now type the likelihood: "))
-                prior = float(input("prior: "))
-                marginal = float(input("Marginal: "))
-                answer = (likelihood * prior) / marginal
-                print("The prosterior is: ", answer)
-            elif theorem == "n":
-                equation = input("Please write the joint equation in full: ").strip()
-                equation = equation.split("P")
-                equation.pop(0)  # For some reason it always had an empty element in the start, so let's get rid of that
-                events = clean(equation)
-                setting = set(input(
-                    "What is the posterior you want to calculate? e.g. (W|S)"))
-                thingsToSet = list(clean(setting))
-                toSetNumerator = thingsToSet[0] + " = 1 and " + thingsToSet[1] + " = 1"
-                toSetDenominator = thingsToSet[1] + " = 1"
-                numeratEvents = removeStuff(events, thingsToSet)
-                denomEvents = removeStuff(events, thingsToSet[1])
-                # Now, events contains the things we need to run through
-                numerator = calculateProbabilities(numeratEvents, toSetNumerator)
-                denominator = calculateProbabilities(denomEvents, toSetDenominator)
-                result = numerator / denominator
-                print("Result = ", result)
-            else:
-                print("Sorry, I didn't understand, please try again.")
-        if additional == "l":
-            posterior = float(input("Please now type the posterior: "))
-            prior = float(input("prior: "))
-            marginal = float(input("Marginal: "))
-            answer = (marginal * posterior) / prior
-            print("The likelihood is: ", answer)
-        if additional == "m":
-            posterior = float(input("Please now type the posterior: "))
-            prior = float(input("prior: "))
-            likelihood = float(input("likelihood: "))
-            answer = (likelihood * prior) / posterior
-            print("The marginal is: ", answer)
-        if additional == "r":
-            posterior = float(input("Please now type the posterior: "))
-            marginal = float(input("prior: "))
-            likelihood = float(input("likelihood: "))
-            answer = (marginal * posterior) / likelihood
-            print("The prior is: ", answer)
-        else:
-            print("Sorry, I didn't understand.")
-    elif user == "point crossover":
-        print("You have selected point crossover for evolutionary algorithms")
-        parentA, parentB = getParents()
-        points = getPoints()
-        # Thanks to code from https://www.geeksforgeeks.org/python-single-point-crossover-in-genetic-algorithm/
-        for i in range(len(points)):
-            for gene in range(points[i], len(parentA)):  # parent A and B should be the same length
-                parentA[gene], parentB[gene] = parentB[gene], parentA[gene]
-        parentA = ''.join(parentA)  # Makes it look like a string in the output
-        parentB = ''.join(parentB)
-        print("Child of A is: ", parentA)
-        print("Child of B is: ", parentB)
-    elif user == "swap mutation":
-        print("You have selected swap crossover for evolutionary algorithms")
-        print("Note: This only works for an even number of swap locations.")
-        parentA, parentB = getParents()
-        points = getPoints()
-        for i in range(len(points) - 1):
-            parentA[points[i]], parentA[points[i+1]] = parentA[points[i+1]], parentA[points[i]]
-            parentB[points[i]], parentB[points[i+1]] = parentB[points[i+1]], parentB[points[i]]
-        parentA = ''.join(parentA)  # Makes it look like a string in the output
-        parentB = ''.join(parentB)
-        print("Child of A is now: ", parentA)
-        print("Child of B is now: ", parentB)
-    elif user == "binary conversion":
-        print("You have selected binary to decimal conversion")
-        binary = input("Please enter your binary number: ")
-        # https://pythonguides.com/python-convert-binary-to-decimal/
-        result = int(binary, 2)
-        print("The Decimal value is: ", result)
-    elif user == "decimal conversion":
-        print("You have selected decimal to binary conversion")
-        decimal = int(input("Please enter your decimal number: "))
-        # https://stackoverflow.com/questions/10411085/converting-integer-to-binary-in-python
-        result = '{0:08b}'.format(decimal)
-        print("The binary value is: ", result)
-    else:
-        print(
-            "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "
-            "Capitalisation doesn't matter.")
-        print("I can currently calculate the following: ", possible)
+main()
