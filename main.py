@@ -64,20 +64,21 @@ def clean(setToClean):
 
 
 def removeStuff(items, toRemove):
-    for item in items.copy():  # because we're deleting things
+    resultingItems = items.copy()
+    for item in items:  # because we're deleting things
         for thing in toRemove:
             if item == thing:
-                items.discard(item)  # we just need to not iterate through its options for now
-    return items
+                resultingItems.discard(item)  # we just need to not iterate through its options for now
+    return resultingItems
 
 
-def calculateProbabilities(tofind, found):
+def calculateProbabilities(equation, tofind, found):
     additions = []
     partialResult = 1
     possibilities = getPossibilities(tofind)
     for possibility in possibilities:
         for part in equation:
-            partialResult = partialResult * float(input("What is the probability of P{0} given {1} is {2} and {3} "
+            partialResult = partialResult * float(input("What is the probability of {0} given {1} is {2} and {3} "
                                                         .format(part, tofind, possibility, found)))
         additions.append(partialResult)
     result = np.sum(additions)
@@ -323,16 +324,15 @@ def main():
                     equation = equation.split("P")
                     equation.pop(0)  # For some reason it always had an empty element in the start, so let's get rid of that
                     events = clean(equation)
-                    setting = set(input(
-                        "What is the posterior you want to calculate? e.g. (W|S)"))
+                    setting = set(input("What is the posterior you want to calculate? e.g. (W|S): "))
                     thingsToSet = list(clean(setting))
                     toSetNumerator = thingsToSet[0] + " = 1 and " + thingsToSet[1] + " = 1"
                     toSetDenominator = thingsToSet[1] + " = 1"
                     numeratEvents = removeStuff(events, thingsToSet)
                     denomEvents = removeStuff(events, thingsToSet[1])
                     # Now, events contains the things we need to run through
-                    numerator = calculateProbabilities(numeratEvents, toSetNumerator)
-                    denominator = calculateProbabilities(denomEvents, toSetDenominator)
+                    numerator = calculateProbabilities(events, numeratEvents, toSetNumerator)
+                    denominator = calculateProbabilities(events, denomEvents, toSetDenominator)
                     result = numerator / denominator
                     print("Result = ", result)
                 else:
@@ -372,15 +372,12 @@ def main():
         elif user == "swap mutation":
             print("You have selected swap crossover for evolutionary algorithms")
             print("Note: This only works for an even number of swap locations.")
-            parentA, parentB = getParents()
+            parent = list(input("Please now enter parent A (or the first parent): "))
             points = getPoints()
             for i in range(len(points) - 1):
-                parentA[points[i]], parentA[points[i+1]] = parentA[points[i+1]], parentA[points[i]]
-                parentB[points[i]], parentB[points[i+1]] = parentB[points[i+1]], parentB[points[i]]
-            parentA = ''.join(parentA)  # Makes it look like a string in the output
-            parentB = ''.join(parentB)
-            print("Child of A is now: ", parentA)
-            print("Child of B is now: ", parentB)
+                parent[points[i]], parent[points[i+1]] = parent[points[i+1]], parent[points[i]]
+            parent = ''.join(parentA)  # Makes it look like a string in the output
+            print("Child of parent is now: ", parent)
         elif user == "binary conversion" or user == "binary":
             print("You have selected binary to decimal conversion")
             binary = input("Please enter your binary number: ")
