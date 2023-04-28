@@ -2,7 +2,7 @@ import numpy as np
 import scipy
 import pandas as pd
 from sklearn.mixture import GaussianMixture
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from math import sqrt
 import numexpr
 import matplotlib.pyplot as plt
@@ -16,6 +16,7 @@ Recall
 MSE (Mean Squared Error)
 MAE (Mean Absolute Error)
 F1
+Prior Probability
 KNN Weights (K Nearest Neighbour Weights)
 SD (Standard Deviation)
 Mean
@@ -30,13 +31,13 @@ Point Crossover
 Bit Swap
 Binary to Decimal
 Calculating the fitness
+Naive Bayes Classifier 
+    - Calculates which class a new data point will be in
+Linear Regression
+    - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
 
 Upcoming is:
 KNN
-Linear Regression
-    - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
-Naive Bayes Classifier 
-    - Calculates which class a new data point will be in
     
 
 Type END to quit.
@@ -207,6 +208,37 @@ def func(expr, x, a):
     return numexpr.evaluate(expr)
 
 
+def least_squares_formula(x, y):
+    return np.linalg.inv(x.T.dot(x)).dot(x.T).dot(y)
+
+
+def linear_resizer(x):
+    return np.column_stack((np.ones(x.shape), x))
+
+
+def linear_line(xs, ys):
+    coefficients = least_squares_formula(linear_resizer(xs), ys)
+    resulting_x = np.linspace(xs[0], xs[len(xs) - 1], len(xs))
+    y_intercept, gradient = coefficients[0], coefficients[1]
+    calculated_ys = y_intercept + gradient * resulting_x
+    return resulting_x, calculated_ys, gradient, y_intercept
+
+
+def squared_error(estimated_y, test_y):
+    this_error = 0
+    for i in range(len(estimated_y)):
+        squared_difference = (estimated_y[i] - test_y[i]) ** 2
+        this_error += squared_difference
+    return this_error
+
+
+def find_linear_error(gradient, y_intercept, x_test, y_test):
+    y_estimates = []
+    for x in x_test:
+        y_estimates.append(gradient * x + y_intercept)
+    return squared_error(y_estimates, y_test)
+
+
 # Thanks to https://stackoverflow.com/questions/20167108/how-to-check-how-many-times-an-element-exists-in-a-list
 def marginalise(eqn, askingFor):
     cleaned = set(clean(eqn, False))
@@ -301,6 +333,12 @@ def main():
             array = getarray()
             answer = np.mean(array)
             print("Answer: ", answer)
+        elif user == "prior probability" or user == "prior":
+            print("You have selected the prior probability")
+            thisClass = int(input("How many points are in this class?: "))
+            total = int(input("How many points are in the data set?: "))
+            result = thisClass / total
+            print("The prior probability is: ", result)
         # thanks to https://datagy.io/python-euclidian-distance/
         elif user == "euclidean distance" or user == "euclidean":
             print("You have chosen Euclidean Distance")
@@ -508,6 +546,25 @@ def main():
                     ranges.append(str(a) + " to " + str(top))
                 tops.append(top)
             print("Ranges: ", ranges)
+        elif user == "gaussian naive bayes" or user == "naive":
+            print("You have selected gaussian naive bayes")
+            # L = log(P(c)) + log(P(x1 | c)) + log(P(x2 | c))
+        elif user == "linear regression" or user == "linear":
+            print("You have selected linear regression")
+            fig, ax = plt.subplots()
+            xs, ys = getxys()
+            ax.scatter(xs, ys, label='Data', color="midnightblue")
+            plt.xlabel('x')
+            plt.ylabel('y')
+            # Doing linear algebra with my old DDCS code that I think works
+            linear_xs, linear_ys, gradient, y_intercept = linear_line(xs, ys)
+            print("Gradient: ", gradient)
+            print("Y Intercept: ", y_intercept)
+            sse = find_linear_error(gradient, y_intercept, xs, ys)
+            print("Sum Squared Error: ", sse)
+            print("R Squared: ", r2_score(linear_ys, ys))
+            ax.plot(linear_xs, linear_ys, color='pink', label='predicted values')
+            plt.show()
         else:
             print(
                 "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "
