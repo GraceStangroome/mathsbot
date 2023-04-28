@@ -112,9 +112,6 @@ i.e. $−0.3x^3 + 2x^2 − x + 12$ is written as ```−0.3*x**3+2*x**2−x+12```
 ### Prior Probability
     - for this, type "prior"
 Calculates the prior probability of a class of data points in a data set
-### Naive Bayes Classifier 
-    - for this, type "naive"
-Calculates which class a new data point will be in, using the log likelihood
 ### Linear Regression
     - for this, type "linear"
 This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared using xs and ys that Mathbot will ask you for.
@@ -122,5 +119,8 @@ It also provides a graph as well. It uses some old code I wrote myself some year
 
 ## Upcoming is:
 More details always coming soon!
+### Naive Bayes Classifier 
+    - for this, type "naive"
+Calculates which class a new data point will be in, using the log likelihood.
 ### KNN
 

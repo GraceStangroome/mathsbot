@@ -31,13 +31,13 @@ Point Crossover
 Bit Swap
 Binary to Decimal
 Calculating the fitness
-Naive Bayes Classifier 
-    - Calculates which class a new data point will be in
 Linear Regression
     - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
 
 Upcoming is:
 KNN
+Naive Bayes Classifier 
+    - Calculates which class a new data point will be in
     
 
 Type END to quit.
