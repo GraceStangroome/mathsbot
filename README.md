@@ -62,6 +62,8 @@ It uses Bayes' theorem to allow you to calculate the prosterior, likelihood, pri
 You will need to know 3 of the 4 parts of the equation, but Math bot will take out the hassle or rearranging this for you.
 Mathbot will ask you which of posterior, marginal prior or likelihood you want.
 
+IF YOU CAN REARRANGE BAYES THEOREM, IT IS HIGHLY RECCOMENDED THAT YOU CHOOSE THIS OPTION OVER THE JOINT PROBABILITY EQUATION.
+
 #### Joint probability
 Mathbot will ask you if you want to calculate a conditional probability. This means something like A|B or A|B,C
 
