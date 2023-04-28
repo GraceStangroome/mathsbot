@@ -53,9 +53,28 @@ Currently only supports 2 arrays (xs and ys for example)
 Please read this documentation for more information: https://scikit-learn.org/stable/modules/mixture.html#gmm
 ### Bayes Theorem
     - For this, type "bayes".
-It uses Bayes' theorem to allow you to calculate the prosterior via likelihood, prior and marginal (you can also ask for these things to be calculated) OR the joint probability.
-For the joint probability, all you need to tell MathBot is the equation e.g. P(C)P(S|C)P(R|C)P(W|S,R) which can be derived from the bayesian network that you should have been given. It then steps through all of the probabilities you should also know (it will likely give you redundant information sometimes, you can ignore this), and then provide you with the solution.
-Therefore, it kind of just holds your hand through the calculation of this, but I just think that's neat.
+
+It uses Bayes' theorem to allow you to calculate the prosterior, likelihood, prior, marginal and the joint probability.
+
+#### Rearranging Bayes theorem
+![image](images/BayesTheorem.png)
+
+You will need to know 3 of the 4 parts of the equation, but Math bot will take out the hassle or rearranging this for you.
+Mathbot will ask you which of posterior, marginal prior or likelihood you want.
+
+#### Joint probability
+Mathbot will ask you if you want to calculate a conditional probability. This means something like A|B or A|B,C
+
+If you choose to NOT calculate a conditional probability, mathbot will ask you the probability you want to calculate e.g. A, and then "what it relys on".
+    This is dependent on the baysian network, like the following:
+![image](images/BayesianNetwork.png)
+
+So if you wanted to calculate P(S) you would type 'S' as what you wanted to calculate, and then 'C' for what S relies upon.
+
+If you choose TO calculate a conditional probability, you will need to tell mathbot the full joint equation. It will do any marginalisation possible.
+This equation can be derived from the bayesian network that you should have been given. So, for example, the joint equation in this example image's case is P(C)P(S|C)P(R|C)P(W|S,R), because C has nothing going into it, S depends on C because of the direction of the arrow, which is same as R. And finally, W depends on both S and R.
+
+It then steps through all of the probabilities you should also know (it will likely give you redundant information sometimes, you can ignore this), and then provide you with the solution.
 ### Point Crossover
      - for this, type "point crossover"
 Works with binary and letters. Mathbot asks you for the parents and the number of cross over points, and then the cross over points themselves. 
@@ -74,11 +93,12 @@ Mathbot will then output the:
 * "raw fitness" for the results that come straight from the fitness function,
 * "rescaled" for any rescaled values (mathbot will also tell you if this step is not required), and finally
 * "relative fitness" for the relative fitness. 
- 
+
 IMPORTANT NOTE: The fitness function must be typed with the following rules:
 ```
 No spaces
 The equation must be written in terms of x e.g. x**2 is okay but y**2 is not.
+It cannot handle logs.
 Sometimes something strange can happen where if you copy and paste the equation from somewhere else,
  Mathbot has some kind of breakdown. I'm not really sure how to prevent it so I reccomend typing the
  equation out yourself with the following syntax:

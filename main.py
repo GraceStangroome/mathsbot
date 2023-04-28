@@ -1,4 +1,3 @@
-import matplotlib
 import numpy as np
 import scipy
 import pandas as pd
@@ -7,7 +6,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt
 import numexpr
 import matplotlib.pyplot as plt
-import string
+import re
 
 # A python program that asks what you would like to do, and can calculate:
 possible = """
@@ -53,33 +52,43 @@ def getPossibilities(inList):
     return result
 
 
-def clean(setToClean):
-    result = set().union(*setToClean)
-    # Get it so only the events are in events (naturally)
-    result.discard(")")
-    result.discard("(")
-    result.discard(",")
-    result.discard("|")
+def clean(setToClean, unionise):
+    if unionise:
+        result = set().union(*setToClean)
+        result.discard(")")
+        result.discard("(")
+        result.discard(",")
+        result.discard("|")
+    else:
+        # Get it so only the events are in events (naturally)
+        result = re.split("\[|\]|\)|'|\(|\{|\}| ", setToClean)
     return result
 
 
 def removeStuff(items, toRemove):
-    for item in items.copy():  # because we're deleting things
+    resultingItems = items.copy()
+    for item in items:  # because we're deleting things
         for thing in toRemove:
             if item == thing:
-                items.discard(item)  # we just need to not iterate through its options for now
-    return items
+                resultingItems.discard(item)  # we just need to not iterate through its options for now
+    return resultingItems
 
 
-def calculateProbabilities(tofind, found):
+def calculateProbabilities(equation, tofind, found):
     additions = []
     partialResult = 1
     possibilities = getPossibilities(tofind)
     for possibility in possibilities:
         for part in equation:
-            partialResult = partialResult * float(input("What is the probability of P{0} given {1} is {2} and {3} "
-                                                        .format(part, tofind, possibility, found)))
+            if not tofind:
+                # then toFind is empty
+                partialResult = partialResult * float(input("What is the probability of {0} given {1} "
+                                                            .format(part, found)))
+            else:
+                partialResult = partialResult * float(input("What is the probability of {0} given {1} is {2} and {3} "
+                                                            .format(part, tofind, possibility, found)))
         additions.append(partialResult)
+        partialResult = 1  # reset it for the next iteration
     result = np.sum(additions)
     return result
 
@@ -94,8 +103,8 @@ def usesaved():
 
 def savevalues(xvals, yvals, what):
     global globalsExist
-    save = input("Would you like to save these arrays and use them again? Y/N")
-    if save == "Y" or save == "y":
+    save = input("Would you like to save these arrays and use them again? Y/N").lower()
+    if save == "y":
         print("You chose to save the arrays. Saving...")
         globalsExist = True
         if what == "arrays":
@@ -196,6 +205,39 @@ def getValues():
 # x here is a global variable now, that numexpr needs
 def func(expr, x, a):
     return numexpr.evaluate(expr)
+
+
+# Thanks to https://stackoverflow.com/questions/20167108/how-to-check-how-many-times-an-element-exists-in-a-list
+def marginalise(eqn, askingFor):
+    cleaned = set(clean(eqn, False))
+    # Didn't want to split on commas before,  but cleaned adds commas on their own
+    # so lets clean the garbage
+    cleaned.discard(",")
+    cleaned.discard('')
+    # continuing...
+    conditionals = []
+    notConditionals = []
+    onLeft = []
+    onRight = []
+    for item in cleaned:
+        stringVers = str(item)
+        if "|" in stringVers:
+            conditionals.append(item)
+            splited = stringVers.split("|")
+            onLeft.append(splited[0])
+            onRight.append(splited[1])
+            # because of this, onLeft[i] is the left part of conditionals[i]
+            # and onRight[i] is the right part of conditionals[i]
+        else:
+            notConditionals.append(item)
+    i = 0
+    for item in onLeft:
+        if item not in onRight:
+            if item not in notConditionals:
+                if item not in askingFor:
+                    cleaned.remove(conditionals[i])
+        i += 1
+    return cleaned
 
 
 def main():
@@ -309,52 +351,79 @@ def main():
                 plt.show()
         elif user == "bayes":
             additional = input(
-                "What do you need to calculate? Prosterior (p), Likelihood (l), prior (r), Marginal (m) ").lower().strip()
-            if additional == "p":
-                theorem = input("Do you know the likelihood, Prior and Marginal? Y/N ").lower().strip()
-                if theorem == "y":
+                "Would you like to rearrange Bayes Theorem (b) or do Joint Probability stuff (j) ").lower().strip()
+            if additional == "j":
+                conditional = input(
+                    "Do you want to calculate a conditional probability e.g. P(A|B): y/n ").lower().strip()
+                if conditional == "n":
+                    what = input("What is it that you want to calculate? e.g. H ")
+                    condition = input("What does {0} rely on e.g what is X if {0}|X: ".format(what))
+                    rawEquation = "P" + what + "|" + condition + "P" + condition
+                    equation = rawEquation.split("P")
+                    equation.pop(0)
+                    found = what + " = 1 "
+                    result = calculateProbabilities(set(equation), condition, found)  # equation, toFind, found
+                    print("P({0}) = {1}".format(what, result))
+                elif conditional == "y":
+                    equation = input("Please write the joint equation in full: ").strip()
+                    equation = equation.split("P")
+                    # For some reason it always had an empty element in the start, so let's get rid of that
+                    equation.pop(0)
+                    setting = input("What is it that you want to calculate? e.g. (W|S)")
+                    if "|" in setting:
+                        splited = setting.split("|")
+                    thingsToSet = list(clean(setting, True))
+                    marginalised = marginalise(str(equation), thingsToSet)  # keep this as is
+                    # left side needs to be included in the numerator, but not in the denominator
+                    toSetNumerator = ""
+                    for i in thingsToSet:
+                        toSetNumerator += i + " = 1 "
+                    # denominator is the !first one
+                    denomThingsToSet = thingsToSet.copy()
+                    denomThingsToSet.remove(splited[0])
+                    toSetDenominator = ""
+                    for i in denomThingsToSet:
+                        toSetDenominator += i + " = 1 "
+                    events = clean(marginalised, True)
+                    numeratEvents = removeStuff(events, thingsToSet)
+                    denomEvents = removeStuff(events, denomThingsToSet)
+                    # Now, events contains the things we need to run through
+                    numerator = calculateProbabilities(events, numeratEvents, toSetNumerator)
+                    denominator = calculateProbabilities(events, denomEvents, toSetDenominator)
+                    result = numerator / denominator
+                    print("Result = ", result)
+                else:
+                    print("Sorry, I didn't understand, please try again.")
+            elif additional == "b":
+                theorem = input(
+                    "What do you need to calculate? Posterior (p), Likelihood (l), prior (r), Marginal (m) ")\
+                        .lower().strip()
+                if theorem == "p":
                     likelihood = float(input("Please now type the likelihood: "))
                     prior = float(input("prior: "))
                     marginal = float(input("Marginal: "))
                     answer = (likelihood * prior) / marginal
                     print("The prosterior is: ", answer)
-                elif theorem == "n":
-                    equation = input("Please write the joint equation in full: ").strip()
-                    equation = equation.split("P")
-                    equation.pop(0)  # For some reason it always had an empty element in the start, so let's get rid of that
-                    events = clean(equation)
-                    setting = set(input(
-                        "What is the posterior you want to calculate? e.g. (W|S)"))
-                    thingsToSet = list(clean(setting))
-                    toSetNumerator = thingsToSet[0] + " = 1 and " + thingsToSet[1] + " = 1"
-                    toSetDenominator = thingsToSet[1] + " = 1"
-                    numeratEvents = removeStuff(events, thingsToSet)
-                    denomEvents = removeStuff(events, thingsToSet[1])
-                    # Now, events contains the things we need to run through
-                    numerator = calculateProbabilities(numeratEvents, toSetNumerator)
-                    denominator = calculateProbabilities(denomEvents, toSetDenominator)
-                    result = numerator / denominator
-                    print("Result = ", result)
+                elif theorem == "l":
+                    posterior = float(input("Please now type the posterior: "))
+                    prior = float(input("prior: "))
+                    marginal = float(input("Marginal: "))
+                    answer = (marginal * posterior) / prior
+                    print("The likelihood is: ", answer)
+                elif theorem == "m":
+                    posterior = float(input("Please now type the posterior: "))
+                    prior = float(input("prior: "))
+                    likelihood = float(input("likelihood: "))
+                    answer = (likelihood * prior) / posterior
+                    print("The marginal is: ", answer)
+                elif theorem == "r":
+                    posterior = float(input("Please now type the posterior: "))
+                    marginal = float(input("prior: "))
+                    likelihood = float(input("likelihood: "))
+                    answer = (marginal * posterior) / likelihood
+                    print("The prior is: ", answer)
                 else:
-                    print("Sorry, I didn't understand, please try again.")
-            if additional == "l":
-                posterior = float(input("Please now type the posterior: "))
-                prior = float(input("prior: "))
-                marginal = float(input("Marginal: "))
-                answer = (marginal * posterior) / prior
-                print("The likelihood is: ", answer)
-            if additional == "m":
-                posterior = float(input("Please now type the posterior: "))
-                prior = float(input("prior: "))
-                likelihood = float(input("likelihood: "))
-                answer = (likelihood * prior) / posterior
-                print("The marginal is: ", answer)
-            if additional == "r":
-                posterior = float(input("Please now type the posterior: "))
-                marginal = float(input("prior: "))
-                likelihood = float(input("likelihood: "))
-                answer = (marginal * posterior) / likelihood
-                print("The prior is: ", answer)
+                    print("Sorry, I didn't understand.")
             else:
                 print("Sorry, I didn't understand.")
         elif user == "point crossover":
@@ -372,15 +441,12 @@ def main():
         elif user == "swap mutation":
             print("You have selected swap crossover for evolutionary algorithms")
             print("Note: This only works for an even number of swap locations.")
-            parentA, parentB = getParents()
+            parent = list(input("Please now enter parent A (or the first parent): "))
             points = getPoints()
             for i in range(len(points) - 1):
-                parentA[points[i]], parentA[points[i+1]] = parentA[points[i+1]], parentA[points[i]]
-                parentB[points[i]], parentB[points[i+1]] = parentB[points[i+1]], parentB[points[i]]
-            parentA = ''.join(parentA)  # Makes it look like a string in the output
-            parentB = ''.join(parentB)
-            print("Child of A is now: ", parentA)
-            print("Child of B is now: ", parentB)
+                parent[points[i]], parent[points[i + 1]] = parent[points[i + 1]], parent[points[i]]
+            parent = ''.join(parentA)  # Makes it look like a string in the output
+            print("Child of parent is now: ", parent)
         elif user == "binary conversion" or user == "binary":
             print("You have selected binary to decimal conversion")
             binary = input("Please enter your binary number: ")
@@ -422,7 +488,7 @@ def main():
             total = sum(using)
             relativeFitness = []
             for i in range(len(using)):
-                result = using[i]/total
+                result = using[i] / total
                 relativeFitness.append(result)
             print("Relative Fitness: ", relativeFitness)
             ranges = []
@@ -431,10 +497,10 @@ def main():
                 if i == 0:
                     a = 0
                 else:
-                    if relativeFitness[i-1] != 0:
+                    if relativeFitness[i - 1] != 0:
                         a = tops[i]
                     else:
-                        a = tops[i-1]
+                        a = tops[i - 1]
                 top = a + relativeFitness[i]
                 if top == a:
                     ranges.append(a)
