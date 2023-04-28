@@ -1,4 +1,3 @@
-import matplotlib
 import numpy as np
 import scipy
 import pandas as pd
@@ -62,8 +61,7 @@ def clean(setToClean, unionise):
         result.discard("|")
     else:
         # Get it so only the events are in events (naturally)
-        result = re.split("\[|\]|\)|'|\(|,|\|", setToClean)
-        print("RESULT: ", result)
+        result = re.split("\[|\]|\)|'|\(|\{|\}| ", setToClean)
     return result
 
 
@@ -82,9 +80,15 @@ def calculateProbabilities(equation, tofind, found):
     possibilities = getPossibilities(tofind)
     for possibility in possibilities:
         for part in equation:
-            partialResult = partialResult * float(input("What is the probability of {0} given {1} is {2} and {3} "
+            if not tofind:
+                # then toFind is empty
+                partialResult = partialResult * float(input("What is the probability of {0} given {1} "
+                                                            .format(part, found)))
+            else:
+                partialResult = partialResult * float(input("What is the probability of {0} given {1} is {2} and {3} "
                                                         .format(part, tofind, possibility, found)))
         additions.append(partialResult)
+        partialResult = 1  # reset it for the next iteration
     result = np.sum(additions)
     return result
 
@@ -205,15 +209,35 @@ def func(expr, x, a):
 
 # Thanks to https://stackoverflow.com/questions/20167108/how-to-check-how-many-times-an-element-exists-in-a-list
 def marginalise(eqn, askingFor):
-    counts = {}
-    cleaned = clean(str(eqn), False)
+    cleaned = set(clean(eqn, False))
+    # Didn't want to split on commas before,  but cleaned adds commas on their own
+    # so lets clean the garbage
+    cleaned.discard(",")
+    cleaned.discard('')
+    # continuing...
+    conditionals = []
+    notConditionals = []
+    onLeft = []
+    onRight = []
     for item in cleaned:
-        counts[item] = counts.get(item, 0) + 1
-    print(counts)
-    for item in counts:
-        if item == 1:
-            eqn.remove(item)
-    return eqn
+        stringVers = str(item)
+        if "|" in stringVers:
+            conditionals.append(item)
+            splited = stringVers.split("|")
+            onLeft.append(splited[0])
+            onRight.append(splited[1])
+            # because of this, onLeft[i] is the left part of conditionals[i]
+            # and onRight[i] is the right part of conditionals[i]
+        else:
+            notConditionals.append(item)
+    i = 0
+    for item in onLeft:
+        if item not in onRight:
+            if item not in notConditionals:
+                if item not in askingFor:
+                    cleaned.remove(conditionals[i])
+        i += 1
+    return cleaned
 
 
 def main():
@@ -341,15 +365,25 @@ def main():
                     equation = equation.split("P")
                     # For some reason it always had an empty element in the start, so let's get rid of that
                     equation.pop(0)
-                    events = clean(equation, True)
-                    setting = set(input(
-                        "What is the posterior you want to calculate? e.g. (W|S)"))
+                    setting = input(
+                        "What is it that you want to calculate? e.g. (W|S)")
+                    if "|" in setting:
+                        splited = setting.split("|")
                     thingsToSet = list(clean(setting, True))
-                    marginalised = marginalise(events, thingsToSet)
-                    toSetNumerator = thingsToSet[0] + " = 1 and " + thingsToSet[1] + " = 1"
-                    toSetDenominator = thingsToSet[1] + " = 1"
-                    numeratEvents = removeStuff(marginalised, thingsToSet)
-                    denomEvents = removeStuff(marginalised, thingsToSet[1])
+                    marginalised = marginalise(str(equation), thingsToSet)  # keep this as is
+                    # left side needs to be included in the numerator, but not in the denominator
+                    toSetNumerator = ""
+                    for i in thingsToSet:
+                        toSetNumerator += i + " = 1 "
+                    # denominator is the !first one
+                    denomThingsToSet = thingsToSet.copy()
+                    denomThingsToSet.remove(splited[0])
+                    toSetDenominator = ""
+                    for i in denomThingsToSet:
+                        toSetDenominator += i + " = 1 "
+                    events = clean(marginalised, True)
+                    numeratEvents = removeStuff(events, thingsToSet)
+                    denomEvents = removeStuff(events, denomThingsToSet)
                     # Now, events contains the things we need to run through
                     numerator = calculateProbabilities(events, numeratEvents, toSetNumerator)
                     denominator = calculateProbabilities(events, denomEvents, toSetDenominator)

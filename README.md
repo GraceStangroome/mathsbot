@@ -57,7 +57,9 @@ It uses Bayes' theorem to allow you to calculate the prosterior via likelihood, 
 ![image](images/BayesTheorem.png)
 
 
-For the joint probability, all you need to tell MathBot is the equation. This can be derived from the bayesian network that you should have been given. 
+    - For the joint probability, type "n" when asked if you know the likelihood, prior and marginal
+All you need to tell MathBot is the equation. This can be derived from the bayesian network that you should have been given. 
+
 ![image](images/BayesianNetwork.png)
 
 The joint equation is P(C)P(S|C)P(R|C)P(W|S,R), because C has nothing going into it, S depends on C because of the direction of the arrow, which is same as R. And finally, W depends on both S and R.
@@ -82,11 +84,12 @@ Mathbot will then output the:
 * "raw fitness" for the results that come straight from the fitness function,
 * "rescaled" for any rescaled values (mathbot will also tell you if this step is not required), and finally
 * "relative fitness" for the relative fitness. 
- 
+
 IMPORTANT NOTE: The fitness function must be typed with the following rules:
 ```
 No spaces
 The equation must be written in terms of x e.g. x**2 is okay but y**2 is not.
+It cannot handle logs.
 Sometimes something strange can happen where if you copy and paste the equation from somewhere else,
  Mathbot has some kind of breakdown. I'm not really sure how to prevent it so I reccomend typing the
  equation out yourself with the following syntax:
