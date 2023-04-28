@@ -54,7 +54,15 @@ Please read this documentation for more information: https://scikit-learn.org/st
 ### Bayes Theorem
     - For this, type "bayes".
 It uses Bayes' theorem to allow you to calculate the prosterior via likelihood, prior and marginal (you can also ask for these things to be calculated) OR the joint probability.
-For the joint probability, all you need to tell MathBot is the equation e.g. P(C)P(S|C)P(R|C)P(W|S,R) which can be derived from the bayesian network that you should have been given. It then steps through all of the probabilities you should also know (it will likely give you redundant information sometimes, you can ignore this), and then provide you with the solution.
+![image](images/BayesTheorem.png)
+
+
+For the joint probability, all you need to tell MathBot is the equation. This can be derived from the bayesian network that you should have been given. 
+![image](images/BayesianNetwork.png)
+
+The joint equation is P(C)P(S|C)P(R|C)P(W|S,R), because C has nothing going into it, S depends on C because of the direction of the arrow, which is same as R. And finally, W depends on both S and R.
+
+It then steps through all of the probabilities you should also know (it will likely give you redundant information sometimes, you can ignore this), and then provide you with the solution.
 Therefore, it kind of just holds your hand through the calculation of this, but I just think that's neat.
 ### Point Crossover
      - for this, type "point crossover"

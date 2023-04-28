@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt
 import numexpr
 import matplotlib.pyplot as plt
-import string
+import re
 
 # A python program that asks what you would like to do, and can calculate:
 possible = """
@@ -53,13 +53,17 @@ def getPossibilities(inList):
     return result
 
 
-def clean(setToClean):
-    result = set().union(*setToClean)
-    # Get it so only the events are in events (naturally)
-    result.discard(")")
-    result.discard("(")
-    result.discard(",")
-    result.discard("|")
+def clean(setToClean, unionise):
+    if unionise:
+        result = set().union(*setToClean)
+        result.discard(")")
+        result.discard("(")
+        result.discard(",")
+        result.discard("|")
+    else:
+        # Get it so only the events are in events (naturally)
+        result = re.split("\[|\]|\)|'|\(|,|\|", setToClean)
+        print("RESULT: ", result)
     return result
 
 
@@ -94,8 +98,8 @@ def usesaved():
 
 def savevalues(xvals, yvals, what):
     global globalsExist
-    save = input("Would you like to save these arrays and use them again? Y/N")
-    if save == "Y" or save == "y":
+    save = input("Would you like to save these arrays and use them again? Y/N").lower()
+    if save == "y":
         print("You chose to save the arrays. Saving...")
         globalsExist = True
         if what == "arrays":
@@ -196,6 +200,19 @@ def getValues():
 # x here is a global variable now, that numexpr needs
 def func(expr, x, a):
     return numexpr.evaluate(expr)
+
+
+# Thanks to https://stackoverflow.com/questions/20167108/how-to-check-how-many-times-an-element-exists-in-a-list
+def marginalise(eqn, askingFor):
+    counts = {}
+    cleaned = clean(str(eqn), False)
+    for item in cleaned:
+        counts[item] = counts.get(item, 0) + 1
+    print(counts)
+    for item in counts:
+        if item == 1:
+            eqn.remove(item)
+    return eqn
 
 
 def main():
@@ -321,15 +338,17 @@ def main():
                 elif theorem == "n":
                     equation = input("Please write the joint equation in full: ").strip()
                     equation = equation.split("P")
-                    equation.pop(0)  # For some reason it always had an empty element in the start, so let's get rid of that
-                    events = clean(equation)
+                    # For some reason it always had an empty element in the start, so let's get rid of that
+                    equation.pop(0)
+                    events = clean(equation, True)
                     setting = set(input(
                         "What is the posterior you want to calculate? e.g. (W|S)"))
-                    thingsToSet = list(clean(setting))
+                    thingsToSet = list(clean(setting, True))
+                    marginalised = marginalise(events, thingsToSet)
                     toSetNumerator = thingsToSet[0] + " = 1 and " + thingsToSet[1] + " = 1"
                     toSetDenominator = thingsToSet[1] + " = 1"
-                    numeratEvents = removeStuff(events, thingsToSet)
-                    denomEvents = removeStuff(events, thingsToSet[1])
+                    numeratEvents = removeStuff(marginalised, thingsToSet)
+                    denomEvents = removeStuff(marginalised, thingsToSet[1])
                     # Now, events contains the things we need to run through
                     numerator = calculateProbabilities(numeratEvents, toSetNumerator)
                     denominator = calculateProbabilities(denomEvents, toSetDenominator)
@@ -375,8 +394,8 @@ def main():
             parentA, parentB = getParents()
             points = getPoints()
             for i in range(len(points) - 1):
-                parentA[points[i]], parentA[points[i+1]] = parentA[points[i+1]], parentA[points[i]]
-                parentB[points[i]], parentB[points[i+1]] = parentB[points[i+1]], parentB[points[i]]
+                parentA[points[i]], parentA[points[i + 1]] = parentA[points[i + 1]], parentA[points[i]]
+                parentB[points[i]], parentB[points[i + 1]] = parentB[points[i + 1]], parentB[points[i]]
             parentA = ''.join(parentA)  # Makes it look like a string in the output
             parentB = ''.join(parentB)
             print("Child of A is now: ", parentA)
@@ -422,7 +441,7 @@ def main():
             total = sum(using)
             relativeFitness = []
             for i in range(len(using)):
-                result = using[i]/total
+                result = using[i] / total
                 relativeFitness.append(result)
             print("Relative Fitness: ", relativeFitness)
             ranges = []
@@ -431,10 +450,10 @@ def main():
                 if i == 0:
                     a = 0
                 else:
-                    if relativeFitness[i-1] != 0:
+                    if relativeFitness[i - 1] != 0:
                         a = tops[i]
                     else:
-                        a = tops[i-1]
+                        a = tops[i - 1]
                 top = a + relativeFitness[i]
                 if top == a:
                     ranges.append(a)
