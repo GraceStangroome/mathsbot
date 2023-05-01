@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import scipy
 import pandas as pd
@@ -10,6 +11,7 @@ import re
 
 # A python program that asks what you would like to do, and can calculate:
 possible = """
+Outside of brackets is the command, inside is further context
 Accuracy
 Precision
 Recall
@@ -26,19 +28,19 @@ Gaussian Probability (Normal Distribution)
     - Will find the probability density at a particular point given a list of numbers
 Gaussian Mixture Model
     - estimates parameters of a Gaussian mixture model probability distribution
-Bayes Theorem (incl. joint probability)
+Bayes (Theorem incl. joint probability)
 Point Crossover
-Bit Swap
-Binary to Decimal
-Calculating the fitness
+Swap Mutation (bit swap)
+Binary Conversion (binary to decimal)
+Decimal Conversion (decimal to binary)
+Fitness (of a function)
 Linear Regression
-    - This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared
-
+    - (This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared)
+Naive Bayes Classifier 
+    - (Calculates which class a new data point will be in)
+    
 Upcoming is:
 KNN
-Naive Bayes Classifier 
-    - Calculates which class a new data point will be in
-    
 
 Type END to quit.
 """
@@ -272,6 +274,19 @@ def marginalise(eqn, askingFor):
     return cleaned
 
 
+def getpriorprob(output, size):
+    if output:
+        print("You have selected the prior probability")
+    thisClass = int(input("How many points are in this class?: "))
+    if size == 0:
+        total = int(input("How many points are in the whole data set?: "))
+    else:
+        total = size
+    result = thisClass / total
+    if output:
+        print("The prior probability is: ", result)
+    return result
+
 def main():
     running = 0
     while running == 0:
@@ -334,11 +349,7 @@ def main():
             answer = np.mean(array)
             print("Answer: ", answer)
         elif user == "prior probability" or user == "prior":
-            print("You have selected the prior probability")
-            thisClass = int(input("How many points are in this class?: "))
-            total = int(input("How many points are in the data set?: "))
-            result = thisClass / total
-            print("The prior probability is: ", result)
+            getpriorprob(True, 0)
         # thanks to https://datagy.io/python-euclidian-distance/
         elif user == "euclidean distance" or user == "euclidean":
             print("You have chosen Euclidean Distance")
@@ -546,9 +557,70 @@ def main():
                     ranges.append(str(a) + " to " + str(top))
                 tops.append(top)
             print("Ranges: ", ranges)
-        elif user == "gaussian naive bayes" or user == "naive":
+        elif user == "naive bayes classifier" or user == "naive":
             print("You have selected gaussian naive bayes")
-            # L = log(P(c)) + log(P(x1 | c)) + log(P(x2 | c))
+            # Basically doing this: L = log(P(c)) + log(P(x1 | c)) + log(P(x2 | c))
+            # Log Likelihood
+            numClasses = int(input("How many classes are there: "))
+            rawVariables = input("What are your variables? Separate with a comma only e.g. Density,Hardness ").strip()
+            newPoint = toarray(input("What is the new point (x1,x2) you are trying to classify e.g. 5,3 "))
+            knowingprior = input("Do you already know the prior probabilities? y/n ").lower().strip()
+            if knowingprior == "n":  # I want to get from the users now about how many things are in the whole data set
+                # so that we don't have to ask them loads of times which might be confusing
+                dataSize = int(input("How many data points are there across all classes? "))
+            priors = []
+            knowingMeans = input("Do you already know the mean and standard deviations for each class? y/n ").lower().strip()
+            variables = rawVariables.split(",")
+            likelihoods = []
+            for i in range(numClasses):
+                part = []  # reset it every time we get to a new class
+                if knowingprior == "y":
+                    prior = float(input("Please enter the prior probability for class {0} as a decimal ".format(i)))
+                    priors.append(prior)
+                else:
+                    print("For class ", i)
+                    tellUser = input("Would you like to know the prior probability? y/n ").lower().strip()
+                    if tellUser == "y":
+                        prior = getpriorprob(True, dataSize)
+                    else:
+                        prior = getpriorprob(False, dataSize)
+                    priors.append(prior)
+                for index, var in enumerate(variables):
+                    if knowingMeans == "y":
+                        mean = float(input("Please enter the Mean for {0} in class {1} as a decimal ".format(var, i)))
+                        std = float(input("Please enter the Standard Deviation for {0} in class {1} as a decimal ".format(var, i)))
+                    else:
+                        message = "Enter all " + var + " values in class " + str(
+                            i) + " separated with a comma e.g. '2,4,6 "
+                        values = toarray(input(message))
+                        mean = np.mean(values)
+                        std = np.std(values)
+                    firstHalf = (1 / (std * sqrt(2 * math.pi)))
+                    b = -0.5 * ((newPoint[index] - mean) / std) ** 2
+                    secondHalf = math.exp(b)
+                    if secondHalf == 0:
+                        # Wolfram Alpha can recognise really really tiny numbers as not 0 (like 10^-431),
+                        # There’s only 10^80 atoms in the universe or something, so I'm really impressed with WA
+                        # But calculators and python cannot handle this, they just evaluate it to 0
+                        # We can do the following because log[A*exp(B)] = logA + log(expB) = logA + B
+                        part.append(math.log(firstHalf) + b)
+                    elif firstHalf == 0:
+                        # we can't interchange log(A) + B
+                        # so there has probably been a huge mistake
+                        print("WARNING: I've detected an undefined maths function.")
+                        print("I recommend that you start again, as I think a mistake has probably been made.")
+                        print("Additionally, you may want to do this on Wolfram Alpha if this keeps happening.")
+                        print("I can try and carry on though, which I will, and assume the problematic value is 0.")
+                        print("I.e. this means we just pretend it didn't happen.")
+                        part.append(0)  # why not lol
+                    else:
+                        probability = math.log(firstHalf * secondHalf)
+                        part.append(probability)
+                result = math.log(priors[i]) + part[0] + part[1]
+                likelihoods.append(result)
+                print("The log likelihood for this class is: ", result)
+            maxedL = likelihoods.index(max(likelihoods))
+            print("The class to choose would be {0} with a value of {1}".format(maxedL, likelihoods[maxedL]))
         elif user == "linear regression" or user == "linear":
             print("You have selected linear regression")
             fig, ax = plt.subplots()
