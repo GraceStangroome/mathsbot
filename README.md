@@ -118,11 +118,15 @@ Calculates the prior probability of a class of data points in a data set
     - for this, type "linear"
 This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared using xs and ys that Mathbot will ask you for.
 It also provides a graph as well. It uses some old code I wrote myself some years ago. I think it works anyway. 
+### Naive Bayes Classifier 
+    - for this, type "naive"
+Math bot will ask you what you do or don't know, and then calculates which class a new data point will be in, using the log likelihood.
+Math bot will tell you the log likelihood for each class, and the prior probability if you want.
+
+IMPORTANT: Math bot will automatically 0 index (so start at 0) with the classes, which may not be the same as your notation. When it tells you the selected class, you will need to keep this in mind. For example, if you have 3 classes, 1-3, mathbot will number them 0-3 and therefore "class 2" is actually a different class in this example.
+
 
 ## Upcoming is:
 More details always coming soon!
-### Naive Bayes Classifier 
-    - for this, type "naive"
-Calculates which class a new data point will be in, using the log likelihood.
 ### KNN
 
