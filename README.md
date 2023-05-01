@@ -1,3 +1,4 @@
+```
 # Welcome to Math Bot. 
 Math bot does some specific calculations in Python, so that you can do other things :)
 
@@ -130,3 +131,4 @@ IMPORTANT: Math bot will automatically 0 index (so start at 0) with the classes,
 More details always coming soon!
 ### KNN
 
+```
