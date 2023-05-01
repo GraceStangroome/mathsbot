@@ -83,10 +83,10 @@ def calculateProbabilities(equation, tofind, found):
         for part in equation:
             if not tofind:
                 # then toFind is empty
-                partialResult = partialResult * float(input("What is the probability of {0} given {1} "
+                partialResult = partialResult * float(input("What is P({0}) if we know {1} "
                                                             .format(part, found)))
             else:
-                partialResult = partialResult * float(input("What is the probability of {0} given {1} is {2} and {3} "
+                partialResult = partialResult * float(input("What is P({0}) if we know {1} is {2} and {3} "
                                                             .format(part, tofind, possibility, found)))
         additions.append(partialResult)
         partialResult = 1  # reset it for the next iteration
@@ -407,7 +407,7 @@ def main():
                     equation = equation.split("P")
                     # For some reason it always had an empty element in the start, so let's get rid of that
                     equation.pop(0)
-                    setting = input("What is it that you want to calculate? e.g. (W|S)")
+                    setting = input("What is it that you want to calculate? e.g. W|S ")
                     if "|" in setting:
                         splited = setting.split("|")
                     thingsToSet = list(clean(setting, True))
