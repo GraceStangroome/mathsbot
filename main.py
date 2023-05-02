@@ -444,12 +444,15 @@ def main():
                 if conditional == "n":
                     what = input("What is it that you want to calculate? e.g. H ")
                     condition = input("What does {0} rely on e.g what is X if {0}|X: ".format(what))
-                    rawEquation = "P" + what + "|" + condition + "P" + condition
+                    rawEquation = "P" + what + "|" + condition
+                    if "," in condition:
+                        conditions = condition.split(",")
+                        for i in conditions:
+                            rawEquation += "P" + i
                     equation = rawEquation.split("P")
                     equation.pop(0)
                     found = what + " = 1 "
                     if "," in condition:
-                        conditions = condition.split(",")
                         result = calculateProbabilities(set(equation), conditions, found)  # equation, toFind, found
                     else:
                         result = calculateProbabilities(set(equation), condition, found)  # equation, toFind, found
