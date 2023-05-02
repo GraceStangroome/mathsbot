@@ -287,6 +287,43 @@ def getpriorprob(output, size):
         print("The prior probability is: ", result)
     return result
 
+
+def valueIteration(gridWorld, gridWorldDimensions, cell, discount, probability):
+    # coordinates
+    cellRow = cell[0]
+    cellColumn = cell[1]
+    cellVal = gridWorld[cellRow][cellColumn]
+    surroundingVals = []
+    if cellRow + 1 < gridWorldDimensions[0]:
+        surroundingVals.append(gridWorld[cellRow + 1][cellColumn])
+    if cellRow - 1 < gridWorldDimensions[0]:
+        surroundingVals.append(gridWorld[cellRow - 1][cellColumn])
+    if cellColumn + 1 < gridWorldDimensions[1]:
+        surroundingVals.append(gridWorld[cellRow][cellColumn + 1])
+    if cellColumn - 1 < gridWorldDimensions[1]:
+        surroundingVals.append(gridWorld[cellRow][cellColumn - 1])
+    expectedBestIndex = surroundingVals.index(max(surroundingVals))
+    expectedBest = surroundingVals[expectedBestIndex]
+    del surroundingVals[expectedBestIndex]  # it was the best one, so it's not a value to consider anymore
+    utilityOfOthers = []
+    probOfOthers = (1 - probability) / len(surroundingVals)
+    for surrounding in surroundingVals:
+        utilityOfOthers.append(probOfOthers * surrounding)
+    value = sum(utilityOfOthers)
+    update = cellVal + discount * (probability * expectedBest + value)
+    return update
+
+
+def doIteration(gridWorld, newGridWorld, iteration, rows, cols, dimensions, discount, prob):
+    print("For iteration {0}: ".format(iteration))
+    for i in range(rows):
+        for j in range(cols):
+            result = valueIteration(gridWorld, dimensions, [i, j], discount, prob)
+            newGridWorld[i][j] = result
+            print("Value of cell [{0},{1}] is now {2}.".format(i, j, result))
+    return newGridWorld
+
+
 def main():
     running = 0
     while running == 0:
@@ -449,8 +486,8 @@ def main():
                     print("Sorry, I didn't understand, please try again.")
             elif additional == "b":
                 theorem = input(
-                    "What do you need to calculate? Posterior (p), Likelihood (l), prior (r), Marginal (m) ")\
-                        .lower().strip()
+                    "What do you need to calculate? Posterior (p), Likelihood (l), prior (r), Marginal (m) ") \
+                    .lower().strip()
                 if theorem == "p":
                     likelihood = float(input("Please now type the likelihood: "))
                     prior = float(input("prior: "))
@@ -573,7 +610,8 @@ def main():
                 # so that we don't have to ask them loads of times which might be confusing
                 dataSize = int(input("How many data points are there across all classes? "))
             priors = []
-            knowingMeans = input("Do you already know the mean and standard deviations for each class? y/n ").lower().strip()
+            knowingMeans = input(
+                "Do you already know the mean and standard deviations for each class? y/n ").lower().strip()
             variables = rawVariables.split(",")
             likelihoods = []
             for i in range(numClasses):
@@ -592,7 +630,8 @@ def main():
                 for index, var in enumerate(variables):
                     if knowingMeans == "y":
                         mean = float(input("Please enter the Mean for {0} in class {1} as a decimal ".format(var, i)))
-                        std = float(input("Please enter the Standard Deviation for {0} in class {1} as a decimal ".format(var, i)))
+                        std = float(input(
+                            "Please enter the Standard Deviation for {0} in class {1} as a decimal ".format(var, i)))
                     else:
                         message = "Enter all " + var + " values in class " + str(
                             i) + " separated with a comma e.g. '2,4,6 "
@@ -641,6 +680,28 @@ def main():
             print("R Squared: ", r2_score(linear_ys, ys))
             ax.plot(linear_xs, linear_ys, color='pink', label='predicted values')
             plt.show()
+        elif user == "value" or user == "value iteration":
+            print("You have chosen value iteration for Markov Decision Processes")
+            numRows = int(input("How many rows are there in the grid world: "))
+            numColumns = int(input("How many columns are there in the grid world: "))
+            dimensions = [numRows, numColumns]
+            gridWorld = []
+            i = 0
+            while i < numRows:
+                row = toarray(input("Please enter row {0} separated with commas only like 5,4,3: ".format(i)))
+                if len(row) != numColumns:
+                    print("Row entered had incorrect number of Columns, please try again.")
+                else:
+                    gridWorld.append(row)
+                    i += 1  # move on
+            discountFactor = float(input("What is the discount factor: "))
+            message = "What is the probability that the transition model will go in the intended direction?: "
+            intendedDirectionProb = float(input(message))
+            numIterations = int(input("How many iterations would you like to do?: "))
+            newGridWorld = [[0 for x in range(numColumns)] for y in range(numRows)]
+            for iteration in range(numIterations):
+                # update gridWorld
+                gridWorld = doIteration(gridWorld, newGridWorld, iteration, numRows, numColumns, dimensions, discountFactor, intendedDirectionProb)
         elif user == "help":
             print("I can currently calculate the following: ", possible)
         else:
