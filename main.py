@@ -449,6 +449,8 @@ def main():
                         conditions = condition.split(",")
                         for i in conditions:
                             rawEquation += "P" + i
+                    else:
+                        rawEquation += "P" + condition
                     equation = rawEquation.split("P")
                     equation.pop(0)
                     found = what + " = 1 "
