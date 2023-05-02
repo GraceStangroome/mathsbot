@@ -364,7 +364,7 @@ def main():
             distance = abs(x[0] - y[0]) + abs(x[1] - y[1])
             print("Answer: ", distance)
         # thanks to https://stackoverflow.com/questions/12412895/how-to-calculate-probability-in-a-normal-distribution-given-mean-standard-devi
-        elif user == "gaussian probability" or user == "gaussian":
+        elif user == "gaussian probability" or user == "density":
             print("You have chosen Gaussian probability")
             value = int(input("What value would you like the probability density to be caluclated at?: "))
             array = getarray()
@@ -411,7 +411,11 @@ def main():
                     equation = rawEquation.split("P")
                     equation.pop(0)
                     found = what + " = 1 "
-                    result = calculateProbabilities(set(equation), condition, found)  # equation, toFind, found
+                    if "," in condition:
+                        conditions = condition.split(",")
+                        result = calculateProbabilities(set(equation), conditions, found)  # equation, toFind, found
+                    else:
+                        result = calculateProbabilities(set(equation), condition, found)  # equation, toFind, found
                     print("P({0}) = {1}".format(what, result))
                 elif conditional == "y":
                     equation = input("Please write the joint equation in full: ").strip()
@@ -494,8 +498,8 @@ def main():
             points = getPoints()
             for i in range(len(points) - 1):
                 parent[points[i]], parent[points[i + 1]] = parent[points[i + 1]], parent[points[i]]
-            parent = ''.join(parentA)  # Makes it look like a string in the output
-            print("Child of parent is now: ", parent)
+            parentRes = ''.join(parent)  # Makes it look like a string in the output
+            print("Child of parent is now: ", parentRes)
         elif user == "binary conversion" or user == "binary":
             print("You have selected binary to decimal conversion")
             binary = input("Please enter your binary number: ")
@@ -637,6 +641,8 @@ def main():
             print("R Squared: ", r2_score(linear_ys, ys))
             ax.plot(linear_xs, linear_ys, color='pink', label='predicted values')
             plt.show()
+        elif user == "help":
+            print("I can currently calculate the following: ", possible)
         else:
             print(
                 "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "

@@ -1,4 +1,4 @@
-# Welcome to Math Bot. 
+#Welcome to Math Bot. 
 Math bot does some specific calculations in Python, so that you can do other things :)
 
 Math bot will ask you what you wish to calculate, and can remember previously given arrays and data points to work with again.
@@ -37,13 +37,13 @@ Math bot will ask for a list of values and will calculate the SD.
     - For this, type "mean".
 Math bot will ask for a list of values and will calculate the mean.
 ### Euclidean Distance
-    - For this, type "euclidean distance" or "euclidean.
+    - For this, type "euclidean distance" or "euclidean".
 Math bot will ask for a list of xs and ys and will calculate the euclidean distance.
 ### Manhattan Distance
-    - For this, type "manhattan distance" or "manhattan.
+    - For this, type "manhattan distance" or "manhattan".
 Math bot will ask for a list of xs and ys and will calculate the manhattan distance.
 ### Gaussian Probability (Normal Distribution)
-    - For this, type "gaussian probability" or "gaussian".
+    - For this, type "gaussian probability" or "density".
 Math bot will find the probability density at a particular point given a list of numbers
 ### Gaussian Mixture Model
     - For this, type "gaussian mixure model" or "mixture".
@@ -108,7 +108,7 @@ Sometimes something strange can happen where if you copy and paste the equation 
 + = add
 - = subtract or negative
 ```
-i.e. $−0.3x^3 + 2x^2 − x + 12$ is written as ```−0.3*x**3+2*x**2−x+12```
+i.e. $ −0.3x^3 + 2x^2 − x + 12 $ is written as ```−0.3*x**3+2*x**2−x+12```
 ### Prior Probability
     - for this, type "prior"
 Calculates the prior probability of a class of data points in a data set
@@ -127,4 +127,3 @@ IMPORTANT: Math bot will automatically 0 index (so start at 0) with the classes,
 ## Upcoming is:
 More details always coming soon!
 ### KNN
-
