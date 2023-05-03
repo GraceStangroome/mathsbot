@@ -37,13 +37,13 @@ Math bot will ask for a list of values and will calculate the SD.
     - For this, type "mean".
 Math bot will ask for a list of values and will calculate the mean.
 ### Euclidean Distance
-    - For this, type "euclidean distance" or "euclidean.
+    - For this, type "euclidean distance" or "euclidean".
 Math bot will ask for a list of xs and ys and will calculate the euclidean distance.
 ### Manhattan Distance
-    - For this, type "manhattan distance" or "manhattan.
+    - For this, type "manhattan distance" or "manhattan".
 Math bot will ask for a list of xs and ys and will calculate the manhattan distance.
 ### Gaussian Probability (Normal Distribution)
-    - For this, type "gaussian probability" or "gaussian".
+    - For this, type "gaussian probability" or "density".
 Math bot will find the probability density at a particular point given a list of numbers
 ### Gaussian Mixture Model
     - For this, type "gaussian mixure model" or "mixture".
@@ -90,7 +90,7 @@ Then it just does the swap mutation. If you have decimal numbers you would need 
 Converts from binary to decimal and vice versa.
 ### Fitness of a function
     - for this, type "fitness"
-Mathbot will ask you for a fitness function and some values. It will then rescale the values if required.
+Mathbot will ask you for a fitness function and some values which you must enter in the order they are on the roulette wheel. It will then rescale the values if required.
 Mathbot will then output the:
 * "raw fitness" for the results that come straight from the fitness function,
 * "rescaled" for any rescaled values (mathbot will also tell you if this step is not required), and finally
@@ -110,7 +110,7 @@ Sometimes something strange can happen where if you copy and paste the equation 
 + = add
 - = subtract or negative
 ```
-i.e. $−0.3x^3 + 2x^2 − x + 12$ is written as ```−0.3*x**3+2*x**2−x+12```
+i.e. $ −0.3x^3 + 2x^2 − x + 12 $ is written as ```−0.3*x**3+2*x**2−x+12```
 ### Prior Probability
     - for this, type "prior"
 Calculates the prior probability of a class of data points in a data set
@@ -125,8 +125,18 @@ Math bot will tell you the log likelihood for each class, and the prior probabil
 
 IMPORTANT: Math bot will automatically 0 index (so start at 0) with the classes, which may not be the same as your notation. When it tells you the selected class, you will need to keep this in mind. For example, if you have 3 classes, 1-3, mathbot will number them 0-3 and therefore "class 2" is actually a different class in this example.
 
+### Clustering via K-Means
+    - for this, type "clustering"
+Clusters data points via K-Means per iteration and provides new centroids.
+If you want to know how many iterations you would need until convergence, type 0 when prompted for how many initialised centroids. It will colour the data points differently per different centroid.
+### Value Iteration
+    - for this type "value" or "value iteration"
+Can do value iteration in a 2D and 1D grid worlds. Cannot move in diagonals. Can move in only up-down, left-right or both. It will ask you for terminal states which includes goal states.
 
-## Upcoming is:
-More details always coming soon!
-### KNN
+IMPORTANT NOTE:
+Mathbot indexes Grid World in the following way: [row, column] and 0 indexed.
 
+
+This may be different to the way it is indexed in the question. BE WARY.
+
+![image](images/GridWorld.png)

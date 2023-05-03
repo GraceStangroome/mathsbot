@@ -4,6 +4,7 @@ import scipy
 import pandas as pd
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.cluster import KMeans
 from math import sqrt
 import numexpr
 import matplotlib.pyplot as plt
@@ -38,9 +39,8 @@ Linear Regression
     - (This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared)
 Naive Bayes Classifier 
     - (Calculates which class a new data point will be in)
-    
-Upcoming is:
-KNN
+Clustering (via K-Means)
+Value Iteration
 
 Type END to quit.
 """
@@ -287,6 +287,181 @@ def getpriorprob(output, size):
         print("The prior probability is: ", result)
     return result
 
+
+def valueIteration2D(gridWorld, gridWorldDimensions, cell, discount, probability, terminals):
+    # coordinates
+    cellRow = cell[0]
+    cellColumn = cell[1]
+    cellVal = gridWorld[cellRow][cellColumn]
+    if cell in terminals:
+        update = cellVal
+    else:
+        surroundingVals = []
+        directions = []
+        if cellRow + 1 >= gridWorldDimensions[0]:
+            surroundingVals.append(cellVal)
+            directions.append("down")
+        if cellRow + 1 < gridWorldDimensions[0]:
+            surroundingVals.append(gridWorld[cellRow + 1][cellColumn])
+            directions.append("down")
+        if gridWorldDimensions[0] > cellRow - 1 >= 0:  # because we do something else if it is less than 0
+            surroundingVals.append(gridWorld[cellRow - 1][cellColumn])
+            directions.append("up")
+        if cellRow - 1 < 0:
+            surroundingVals.append(cellVal)
+            directions.append("up")
+        if cellColumn + 1 >= gridWorldDimensions[1]:
+            surroundingVals.append(cellVal)
+            directions.append("right")
+        if cellColumn + 1 < gridWorldDimensions[1]:
+            surroundingVals.append(gridWorld[cellRow][cellColumn + 1])
+            directions.append("right")
+        if gridWorldDimensions[1] > cellColumn - 1 >= 0:
+            surroundingVals.append(gridWorld[cellRow][cellColumn - 1])
+            directions.append("left")
+        if cellColumn - 1 < 0:
+            surroundingVals.append(cellVal)
+            directions.append("left")
+        expectedBestIndex = surroundingVals.index(max(surroundingVals))
+        expectedBest = surroundingVals[expectedBestIndex]
+        direction = directions[expectedBestIndex]
+        print("Expected Best: ", expectedBest)
+        if len(set(surroundingVals)) == 1:  # sets remove duplicate values, so if everything is the same
+            surroundingVals.remove(cellVal)   # all actions have the same utility
+        del surroundingVals[expectedBestIndex]  # it was the best one, so it's not a value to consider anymore
+        # Because we go in right angles to direction we go in to get best outcome, we will always do
+        remainingProb = round((1-probability) / 2, 1)  # otherwise it gives a silly answer
+        # going in right angles means going left or right if going up or down
+        # and up and down if going left or right
+        print("Best action is ", direction)
+        otherDirectionVal = 0
+        if direction == "up" or direction == "down":
+            if gridWorldDimensions[1] > cellColumn - 1 >= 0:  # left
+                otherDirectionVal += gridWorld[cellRow][cellColumn - 1] * remainingProb
+            if cellColumn - 1 < 0:  # left
+                otherDirectionVal += cellVal * remainingProb
+            if cellColumn + 1 >= gridWorldDimensions[1]:  # right
+                otherDirectionVal += cellVal * remainingProb
+            if cellColumn + 1 < gridWorldDimensions[1]:  # right
+                otherDirectionVal += gridWorld[cellRow][cellColumn + 1] * remainingProb
+        elif direction == "right" or direction == "left":
+            if cellRow + 1 >= gridWorldDimensions[0]:  # down
+                otherDirectionVal += cellVal * remainingProb
+            if cellRow + 1 < gridWorldDimensions[0]:  # down
+                otherDirectionVal += gridWorld[cellRow + 1][cellColumn] * remainingProb
+            if gridWorldDimensions[0] > cellRow - 1 >= 0:  # up
+                otherDirectionVal += gridWorld[cellRow - 1][cellColumn] * remainingProb
+            if cellRow - 1 < 0:
+                otherDirectionVal += cellVal * remainingProb  # up
+        else:
+            print("internal error at going in right angles")
+        update = cellVal + discount * (probability * expectedBest + otherDirectionVal)
+    return update
+
+
+def valueIteration(gridWorld, gridWorldDimensions, cell, discount, probability, possDirections, terminals):
+    # coordinates
+    cellRow = cell[0]
+    cellColumn = cell[1]
+    cellVal = gridWorld[cellRow][cellColumn]
+    if cell in terminals:  # no update
+        update = cellVal
+    else:
+        surroundingVals = []
+        directions = []
+        if possDirections == 1:
+            if cellRow + 1 >= gridWorldDimensions[0]:
+                surroundingVals.append(cellVal)
+                directions.append("down")
+            if cellRow + 1 < gridWorldDimensions[0]:
+                surroundingVals.append(gridWorld[cellRow + 1][cellColumn])
+                directions.append("down")
+            if gridWorldDimensions[0] > cellRow - 1 >= 0:  # because we do something else if it is less than 0
+                surroundingVals.append(gridWorld[cellRow - 1][cellColumn])
+                directions.append("up")
+            if cellRow - 1 < 0:
+                surroundingVals.append(cellVal)
+                directions.append("up")
+        else:
+            if cellColumn + 1 >= gridWorldDimensions[1]:
+                surroundingVals.append(cellVal)
+                directions.append("right")
+            if cellColumn + 1 < gridWorldDimensions[1]:
+                surroundingVals.append(gridWorld[cellRow][cellColumn + 1])
+                directions.append("right")
+            if gridWorldDimensions[1] > cellColumn - 1 >= 0:
+                surroundingVals.append(gridWorld[cellRow][cellColumn - 1])
+                directions.append("left")
+            if cellColumn - 1 < 0:
+                surroundingVals.append(cellVal)
+                directions.append("left")
+        expectedBestIndex = surroundingVals.index(max(surroundingVals))
+        expectedBest = surroundingVals[expectedBestIndex]
+        direction = directions[expectedBestIndex]
+        print("Expected Best: ", expectedBest)
+        if len(set(surroundingVals)) == 1:  # sets remove duplicate values, so if everything is the same
+            surroundingVals.remove(cellVal)   # all actions have the same utility
+        del surroundingVals[expectedBestIndex]  # it was the best one, so it's not a value to consider anymore
+        # Because we go in the other way to the direction we go in to get best outcome, we will always do
+        remainingProb = round((1-probability), 1)  # otherwise it gives a silly answer
+        print("Best action is ", direction)
+        otherDirectionVal = 0
+        if direction == "up":
+            if cellRow + 1 >= gridWorldDimensions[0]:  # down
+                otherDirectionVal += cellVal * remainingProb
+            if cellRow + 1 < gridWorldDimensions[0]:  # down
+                otherDirectionVal += gridWorld[cellRow + 1][cellColumn] * remainingProb
+        if direction == "down":  # it will only have the correct kind so no point checking tbh
+            if gridWorldDimensions[0] > cellRow - 1 >= 0:  # up
+                otherDirectionVal += gridWorld[cellRow - 1][cellColumn] * remainingProb
+            if cellRow - 1 < 0:
+                otherDirectionVal += cellVal * remainingProb  # up
+        if direction == "right":
+            if gridWorldDimensions[1] > cellColumn - 1 >= 0:  # left
+                otherDirectionVal += gridWorld[cellRow][cellColumn - 1] * remainingProb
+            if cellColumn - 1 < 0:  # left
+                otherDirectionVal += cellVal * remainingProb
+        if direction == "left":
+            if cellColumn + 1 >= gridWorldDimensions[1]:  # right
+                otherDirectionVal += cellVal * remainingProb
+            if cellColumn + 1 < gridWorldDimensions[1]:  # right
+                otherDirectionVal += gridWorld[cellRow][cellColumn + 1] * remainingProb
+        update = cellVal + discount * (probability * expectedBest + otherDirectionVal)
+    return update
+
+
+def doIteration(gridWorld, newGridWorld, iteration, rows, cols, gridDimensions, discount, prob, dimensions, directions, terminals):
+    print("For iteration {0}: ".format(iteration))
+    if dimensions == 1:
+        for i in range(rows):
+            for j in range(cols):
+                result = valueIteration(gridWorld, gridDimensions, [i, j], discount, prob, directions, terminals)
+                newGridWorld[i][j] = result
+                print("Value of cell [{0},{1}] is now {2}.".format(i, j, result))
+    else:
+        for i in range(rows):
+            for j in range(cols):
+                result = valueIteration2D(gridWorld, gridDimensions, [i, j], discount, prob, terminals)
+                newGridWorld[i][j] = result
+                print("Value of cell [{0},{1}] is now {2}.".format(i, j, result))
+    return newGridWorld
+
+
+# thanks to https://stackoverflow.com/questions/5419204/index-of-duplicates-items-in-a-python-list
+def list_duplicates_of(seq,item):
+    start_at = -1
+    locs = []
+    while True:
+        try:
+            loc = seq.index(item,start_at+1)
+        except ValueError:
+            break
+        else:
+            locs.append(loc)
+            start_at = loc
+    return locs
+
+
 def main():
     running = 0
     while running == 0:
@@ -364,7 +539,7 @@ def main():
             distance = abs(x[0] - y[0]) + abs(x[1] - y[1])
             print("Answer: ", distance)
         # thanks to https://stackoverflow.com/questions/12412895/how-to-calculate-probability-in-a-normal-distribution-given-mean-standard-devi
-        elif user == "gaussian probability" or user == "gaussian":
+        elif user == "gaussian probability" or user == "density":
             print("You have chosen Gaussian probability")
             value = int(input("What value would you like the probability density to be caluclated at?: "))
             array = getarray()
@@ -407,11 +582,20 @@ def main():
                 if conditional == "n":
                     what = input("What is it that you want to calculate? e.g. H ")
                     condition = input("What does {0} rely on e.g what is X if {0}|X: ".format(what))
-                    rawEquation = "P" + what + "|" + condition + "P" + condition
+                    rawEquation = "P" + what + "|" + condition
+                    if "," in condition:
+                        conditions = condition.split(",")
+                        for i in conditions:
+                            rawEquation += "P" + i
+                    else:
+                        rawEquation += "P" + condition
                     equation = rawEquation.split("P")
                     equation.pop(0)
                     found = what + " = 1 "
-                    result = calculateProbabilities(set(equation), condition, found)  # equation, toFind, found
+                    if "," in condition:
+                        result = calculateProbabilities(set(equation), conditions, found)  # equation, toFind, found
+                    else:
+                        result = calculateProbabilities(set(equation), condition, found)  # equation, toFind, found
                     print("P({0}) = {1}".format(what, result))
                 elif conditional == "y":
                     equation = input("Please write the joint equation in full: ").strip()
@@ -445,8 +629,8 @@ def main():
                     print("Sorry, I didn't understand, please try again.")
             elif additional == "b":
                 theorem = input(
-                    "What do you need to calculate? Posterior (p), Likelihood (l), prior (r), Marginal (m) ")\
-                        .lower().strip()
+                    "What do you need to calculate? Posterior (p), Likelihood (l), prior (r), Marginal (m) ") \
+                    .lower().strip()
                 if theorem == "p":
                     likelihood = float(input("Please now type the likelihood: "))
                     prior = float(input("prior: "))
@@ -494,8 +678,8 @@ def main():
             points = getPoints()
             for i in range(len(points) - 1):
                 parent[points[i]], parent[points[i + 1]] = parent[points[i + 1]], parent[points[i]]
-            parent = ''.join(parentA)  # Makes it look like a string in the output
-            print("Child of parent is now: ", parent)
+            parentRes = ''.join(parent)  # Makes it look like a string in the output
+            print("Child of parent is now: ", parentRes)
         elif user == "binary conversion" or user == "binary":
             print("You have selected binary to decimal conversion")
             binary = input("Please enter your binary number: ")
@@ -569,7 +753,8 @@ def main():
                 # so that we don't have to ask them loads of times which might be confusing
                 dataSize = int(input("How many data points are there across all classes? "))
             priors = []
-            knowingMeans = input("Do you already know the mean and standard deviations for each class? y/n ").lower().strip()
+            knowingMeans = input(
+                "Do you already know the mean and standard deviations for each class? y/n ").lower().strip()
             variables = rawVariables.split(",")
             likelihoods = []
             for i in range(numClasses):
@@ -588,7 +773,8 @@ def main():
                 for index, var in enumerate(variables):
                     if knowingMeans == "y":
                         mean = float(input("Please enter the Mean for {0} in class {1} as a decimal ".format(var, i)))
-                        std = float(input("Please enter the Standard Deviation for {0} in class {1} as a decimal ".format(var, i)))
+                        std = float(input(
+                            "Please enter the Standard Deviation for {0} in class {1} as a decimal ".format(var, i)))
                     else:
                         message = "Enter all " + var + " values in class " + str(
                             i) + " separated with a comma e.g. '2,4,6 "
@@ -637,6 +823,95 @@ def main():
             print("R Squared: ", r2_score(linear_ys, ys))
             ax.plot(linear_xs, linear_ys, color='pink', label='predicted values')
             plt.show()
+        elif user == "value" or user == "value iteration":
+            print("You have chosen value iteration for Markov Decision Processes")
+            numRows = int(input("How many rows are there in the grid world: "))
+            numColumns = int(input("How many columns are there in the grid world: "))
+            numTerminals = int(input("How many goal and terminal states are there combined?: "))
+            terminals = []
+            if numTerminals > 0:
+                print("Don't forget I 0 index! See the read me for clarification.")
+            for i in range(numTerminals):
+                x = int(input("Please enter the row position of terminal {0}: ".format(numTerminals)))
+                y = int(input("Please enter the column position of terminal {0}: ".format(numTerminals)))
+                terminal = [x, y]
+                terminals.append(terminal)
+            repeatUntilGood = 0
+            while repeatUntilGood == 0:
+                dimensions = int(input("How many dimensions can I move in? (1) of up-down or left-right, OR both (2): "))
+                if dimensions == 1:
+                    possDirections = int(input("Can we move up and down (1) OR left and right (2): "))
+                    repeatUntilGood = 1
+                elif dimensions == 2:
+                    repeatUntilGood = 1
+                    possDirections = 4
+                else:
+                    print("Sorry. I didn't understand.")
+            gridDimensions = [numRows, numColumns]
+            gridWorld = []
+            i = 0
+            while i < numRows:
+                row = toarray(input("Please enter row {0} separated with commas only like 5,4,3: ".format(i)))
+                if len(row) != numColumns:
+                    print("Row entered had incorrect number of Columns, please try again.")
+                else:
+                    gridWorld.append(row)
+                    i += 1  # move on
+            discountFactor = float(input("What is the discount factor: "))
+            message = "What is the probability that the transition model will go in the intended direction?: "
+            intendedDirectionProb = float(input(message))
+            numIterations = int(input("How many iterations would you like to do?: "))
+            newGridWorld = [[0 for x in range(numColumns)] for y in range(numRows)]
+            for iteration in range(numIterations):
+                # update gridWorld
+                gridWorld = doIteration(gridWorld, newGridWorld, iteration, numRows, numColumns, gridDimensions,
+                                        discountFactor, intendedDirectionProb, dimensions, possDirections, terminals)
+        elif user == "clustering":
+            print("You have selected Clustering via K-Means")
+            xs, ys = getxys()
+            numCentroids = int(input("How many initialised centroids (0 if none): "))  # this is k
+            centroids = []
+            if numCentroids > 0:
+                iterations = int(input("How many iterations would you like to do?: "))
+                for iteration in range(iterations):
+                    for i in range(numCentroids):
+                        centroid = toarray(input("Please now enter centroid {0}: ".format(i)))
+                        centroids.append(centroid)
+                    closestCentroids = []
+                    for index, x in enumerate(xs):
+                        distances = []
+                        point = toarray(str(x) + "," + str(ys[index]))
+                        for centroid in centroids:
+                            squaredDistance = np.sum(np.square(centroid - point))
+                            distances.append(squaredDistance)
+                            # print("distance between {0} and {1} is {2}".format(centroid, point, squaredDistance))
+                        bestCentroidIndex = distances.index(min(distances))
+                        closestCentroids.append(bestCentroidIndex)
+                        print("Closest Centroid to point {0} is {1} ".format(point, centroids[bestCentroidIndex]))
+                    plt.scatter(xs, ys, c=closestCentroids, cmap='cool')
+                    plt.show()
+                    # create new centroids from the means of our classification
+                    for i in range(len(centroids)):
+                        # this gets the indexes of all the points with the same centroid
+                        groupI = list_duplicates_of(closestCentroids, i)
+                        groupIXs = []
+                        groupIYs = []
+                        for member in groupI:
+                            groupIXs.append(xs[member])
+                            groupIYs.append(ys[member])
+                        newGroupIX = np.mean(np.array(groupIXs))
+                        newGroupIY = np.mean(np.array(groupIYs))
+                        print("New Centroid is: ({0},{1})".format(newGroupIX, newGroupIY))
+            else:
+                X = linear_resizer(xs)
+                kmm = KMeans()
+                kmm.fit(X)
+                plt.figure()
+                print(kmm.labels_)
+                plt.scatter(xs, ys, c=kmm.labels_, cmap='cool')
+                plt.show()
+        elif user == "help":
+            print("I can currently calculate the following: ", possible)
         else:
             print(
                 "Sorry, I didn't understand. I cannot interpret spelling mistakes, including extra spaces. "
