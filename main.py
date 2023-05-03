@@ -4,6 +4,7 @@ import scipy
 import pandas as pd
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.cluster import KMeans
 from math import sqrt
 import numexpr
 import matplotlib.pyplot as plt
@@ -38,9 +39,10 @@ Linear Regression
     - (This gives you the gradient, y-intercept, SSE (Sum Squared Error) and R Squared)
 Naive Bayes Classifier 
     - (Calculates which class a new data point will be in)
-    
+Clustering (via K-Means)
+
 Upcoming is:
-KNN
+Value Iteration
 
 Type END to quit.
 """
@@ -296,21 +298,24 @@ def valueIteration(gridWorld, gridWorldDimensions, cell, discount, probability):
     surroundingVals = []
     if cellRow + 1 < gridWorldDimensions[0]:
         surroundingVals.append(gridWorld[cellRow + 1][cellColumn])
-    if cellRow - 1 < gridWorldDimensions[0]:
+    if gridWorldDimensions[0] > cellRow - 1 >= 0:  # need to make sure it doesn't
         surroundingVals.append(gridWorld[cellRow - 1][cellColumn])
     if cellColumn + 1 < gridWorldDimensions[1]:
         surroundingVals.append(gridWorld[cellRow][cellColumn + 1])
-    if cellColumn - 1 < gridWorldDimensions[1]:
+    if gridWorldDimensions[1] > cellColumn - 1 >= 0:
         surroundingVals.append(gridWorld[cellRow][cellColumn - 1])
     expectedBestIndex = surroundingVals.index(max(surroundingVals))
     expectedBest = surroundingVals[expectedBestIndex]
-    del surroundingVals[expectedBestIndex]  # it was the best one, so it's not a value to consider anymore
-    utilityOfOthers = []
-    probOfOthers = (1 - probability) / len(surroundingVals)
-    for surrounding in surroundingVals:
-        utilityOfOthers.append(probOfOthers * surrounding)
-    value = sum(utilityOfOthers)
-    update = cellVal + discount * (probability * expectedBest + value)
+    if len(set(surroundingVals)) == 1:  # sets remove duplicate values, so if everything is the same
+        update = cellVal + discount * expectedBest
+    else:
+        del surroundingVals[expectedBestIndex]  # it was the best one, so it's not a value to consider anymore
+        utilityOfOthers = []
+        probOfOthers = (1 - probability) / len(surroundingVals)
+        for surrounding in surroundingVals:
+            utilityOfOthers.append(probOfOthers * surrounding)
+        value = sum(utilityOfOthers)
+        update = cellVal + discount * (probability * expectedBest + value)
     return update
 
 
@@ -322,6 +327,21 @@ def doIteration(gridWorld, newGridWorld, iteration, rows, cols, dimensions, disc
             newGridWorld[i][j] = result
             print("Value of cell [{0},{1}] is now {2}.".format(i, j, result))
     return newGridWorld
+
+
+# thanks to https://stackoverflow.com/questions/5419204/index-of-duplicates-items-in-a-python-list
+def list_duplicates_of(seq,item):
+    start_at = -1
+    locs = []
+    while True:
+        try:
+            loc = seq.index(item,start_at+1)
+        except ValueError:
+            break
+        else:
+            locs.append(loc)
+            start_at = loc
+    return locs
 
 
 def main():
@@ -707,6 +727,52 @@ def main():
             for iteration in range(numIterations):
                 # update gridWorld
                 gridWorld = doIteration(gridWorld, newGridWorld, iteration, numRows, numColumns, dimensions, discountFactor, intendedDirectionProb)
+        elif user == "clustering":
+            print("You have selected Clustering via K-Means")
+            xs, ys = getxys()
+            X = linear_resizer(xs)
+            Y = linear_resizer(ys)
+            numCentroids = int(input("How many initialised centroids (0 if none): "))  # this is k
+            centroids = []
+            if numCentroids > 0:
+                iterations = int(input("How many iterations would you like to do?: "))
+                for iteration in range(iterations):
+                    for i in range(numCentroids):
+                        centroid = toarray(input("Please now enter centroid {0}: ".format(i)))
+                        centroids.append(centroid)
+                    print(centroids)
+                    closestCentroids = []
+                    for index, x in enumerate(xs):
+                        distances = []
+                        point = toarray(str(x) + "," + str(ys[index]))
+                        for centroid in centroids:
+                            squaredDistance = np.sum(np.square(centroid - point))
+                            distances.append(squaredDistance)
+                            # print("distance between {0} and {1} is {2}".format(centroid, point, squaredDistance))
+                        bestCentroidIndex = distances.index(min(distances))
+                        closestCentroids.append(bestCentroidIndex)
+                        print("Closest Centroid to point {0} is {1} ".format(point, centroids[bestCentroidIndex]))
+                    plt.scatter(xs, ys, c=closestCentroids, cmap='cool')
+                    plt.show()
+                    # create new centroids from the means of our classification
+                    for i in range(len(centroids)):
+                        # this gets the indexes of all the points with the same centroid
+                        groupI = list_duplicates_of(closestCentroids, i)
+                        groupIXs = []
+                        groupIYs = []
+                        for member in groupI:
+                            groupIXs.append(xs[member])
+                            groupIYs.append(ys[member])
+                        newGroupIX = np.mean(np.array(groupIXs))
+                        newGroupIY = np.mean(np.array(groupIYs))
+                        print("New Centroid is: ({0},{1})".format(newGroupIX, newGroupIY))
+            else:
+                kmm = KMeans()
+                kmm.fit(X)
+                plt.figure()
+                print(kmm.labels_)
+                plt.scatter(xs, ys, c=kmm.labels_, cmap='cool')
+                plt.show()
         elif user == "help":
             print("I can currently calculate the following: ", possible)
         else:

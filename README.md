@@ -123,7 +123,11 @@ Math bot will tell you the log likelihood for each class, and the prior probabil
 
 IMPORTANT: Math bot will automatically 0 index (so start at 0) with the classes, which may not be the same as your notation. When it tells you the selected class, you will need to keep this in mind. For example, if you have 3 classes, 1-3, mathbot will number them 0-3 and therefore "class 2" is actually a different class in this example.
 
+### Clustering via K-Means
+    - for this, type "clustering"
+Clusters data points via K-Means per iteration and provides new centroids.
+If you want to know how many iterations you would need until convergence, type 0 when prompted for how many initialised centroids
+
 
 ## Upcoming is:
-More details always coming soon!
-### KNN
+Value Iteration
