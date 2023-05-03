@@ -88,7 +88,7 @@ Then it just does the swap mutation. If you have decimal numbers you would need 
 Converts from binary to decimal and vice versa.
 ### Fitness of a function
     - for this, type "fitness"
-Mathbot will ask you for a fitness function and some values. It will then rescale the values if required.
+Mathbot will ask you for a fitness function and some values which you must enter in the order they are on the roulette wheel. It will then rescale the values if required.
 Mathbot will then output the:
 * "raw fitness" for the results that come straight from the fitness function,
 * "rescaled" for any rescaled values (mathbot will also tell you if this step is not required), and finally
