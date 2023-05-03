@@ -829,6 +829,8 @@ def main():
             numColumns = int(input("How many columns are there in the grid world: "))
             numTerminals = int(input("How many goal and terminal states are there combined?: "))
             terminals = []
+            if numTerminals > 0:
+                print("Don't forget I 0 index! See the read me for clarification.")
             for i in range(numTerminals):
                 x = int(input("Please enter the row position of terminal {0}: ".format(numTerminals)))
                 y = int(input("Please enter the column position of terminal {0}: ".format(numTerminals)))
