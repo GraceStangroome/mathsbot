@@ -832,8 +832,8 @@ def main():
             if numTerminals > 0:
                 print("Don't forget I 0 index! See the read me for clarification.")
             for i in range(numTerminals):
-                x = int(input("Please enter the row position of terminal {0}: ".format(numTerminals)))
-                y = int(input("Please enter the column position of terminal {0}: ".format(numTerminals)))
+                x = int(input("Please enter the row position of terminal {0}: ".format(i)))
+                y = int(input("Please enter the column position of terminal {0}: ".format(i)))
                 terminal = [x, y]
                 terminals.append(terminal)
             repeatUntilGood = 0
