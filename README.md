@@ -1,4 +1,4 @@
-#Welcome to Math Bot. 
+# Welcome to Math Bot. 
 Math bot does some specific calculations in Python, so that you can do other things :)
 
 Math bot will ask you what you wish to calculate, and can remember previously given arrays and data points to work with again.
@@ -126,13 +126,15 @@ IMPORTANT: Math bot will automatically 0 index (so start at 0) with the classes,
 ### Clustering via K-Means
     - for this, type "clustering"
 Clusters data points via K-Means per iteration and provides new centroids.
-If you want to know how many iterations you would need until convergence, type 0 when prompted for how many initialised centroids
+If you want to know how many iterations you would need until convergence, type 0 when prompted for how many initialised centroids. It will colour the data points differently per different centroid.
 ### Value Iteration
     - for this type "value" or "value iteration"
-Can do value iteration in a 2D and 1D grid worlds. Cannot move in diagonals. Can move in only up-down, left-right or both. It assumes -1 as a terminal state and 10 as a goal state
+Can do value iteration in a 2D and 1D grid worlds. Cannot move in diagonals. Can move in only up-down, left-right or both. It will ask you for terminal states which includes goal states.
 
 IMPORTANT NOTE:
-Mathbot indexes Grid World in the following way:
+Mathbot indexes Grid World in the following way: [row, column] and 0 indexed.
+
+
 This may be different to the way it is indexed in the question. BE WARY.
 
 ![image](images/GridWorld.png)
