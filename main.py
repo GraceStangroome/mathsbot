@@ -288,12 +288,12 @@ def getpriorprob(output, size):
     return result
 
 
-def valueIteration2D(gridWorld, gridWorldDimensions, cell, discount, probability):
+def valueIteration2D(gridWorld, gridWorldDimensions, cell, discount, probability, terminals):
     # coordinates
     cellRow = cell[0]
     cellColumn = cell[1]
     cellVal = gridWorld[cellRow][cellColumn]
-    if cellVal == 10 or cellVal == -1:
+    if cell in terminals:
         update = cellVal
     else:
         surroundingVals = []
@@ -359,12 +359,12 @@ def valueIteration2D(gridWorld, gridWorldDimensions, cell, discount, probability
     return update
 
 
-def valueIteration(gridWorld, gridWorldDimensions, cell, discount, probability, possDirections):
+def valueIteration(gridWorld, gridWorldDimensions, cell, discount, probability, possDirections, terminals):
     # coordinates
     cellRow = cell[0]
     cellColumn = cell[1]
     cellVal = gridWorld[cellRow][cellColumn]
-    if cellVal == 10 or cellVal == - 1:  # no update
+    if cell in terminals:  # no update
         update = cellVal
     else:
         surroundingVals = []
@@ -430,18 +430,18 @@ def valueIteration(gridWorld, gridWorldDimensions, cell, discount, probability, 
     return update
 
 
-def doIteration(gridWorld, newGridWorld, iteration, rows, cols, gridDimensions, discount, prob, dimensions, directions):
+def doIteration(gridWorld, newGridWorld, iteration, rows, cols, gridDimensions, discount, prob, dimensions, directions, terminals):
     print("For iteration {0}: ".format(iteration))
     if dimensions == 1:
         for i in range(rows):
             for j in range(cols):
-                result = valueIteration(gridWorld, gridDimensions, [i, j], discount, prob, directions)
+                result = valueIteration(gridWorld, gridDimensions, [i, j], discount, prob, directions, terminals)
                 newGridWorld[i][j] = result
                 print("Value of cell [{0},{1}] is now {2}.".format(i, j, result))
     else:
         for i in range(rows):
             for j in range(cols):
-                result = valueIteration2D(gridWorld, gridDimensions, [i, j], discount, prob)
+                result = valueIteration2D(gridWorld, gridDimensions, [i, j], discount, prob, terminals)
                 newGridWorld[i][j] = result
                 print("Value of cell [{0},{1}] is now {2}.".format(i, j, result))
     return newGridWorld
@@ -827,6 +827,13 @@ def main():
             print("You have chosen value iteration for Markov Decision Processes")
             numRows = int(input("How many rows are there in the grid world: "))
             numColumns = int(input("How many columns are there in the grid world: "))
+            numTerminals = int(input("How many goal and terminal states are there combined?: "))
+            terminals = []
+            for i in range(numTerminals):
+                x = int(input("Please enter the row position of terminal {0}: ".format(numTerminals)))
+                y = int(input("Please enter the column position of terminal {0}: ".format(numTerminals)))
+                terminal = [x, y]
+                terminals.append(terminal)
             repeatUntilGood = 0
             while repeatUntilGood == 0:
                 dimensions = int(input("How many dimensions can I move in? (1) of up-down or left-right, OR both (2): "))
@@ -856,7 +863,7 @@ def main():
             for iteration in range(numIterations):
                 # update gridWorld
                 gridWorld = doIteration(gridWorld, newGridWorld, iteration, numRows, numColumns, gridDimensions,
-                                        discountFactor, intendedDirectionProb, dimensions, possDirections)
+                                        discountFactor, intendedDirectionProb, dimensions, possDirections, terminals)
         elif user == "clustering":
             print("You have selected Clustering via K-Means")
             xs, ys = getxys()
