@@ -296,26 +296,65 @@ def valueIteration(gridWorld, gridWorldDimensions, cell, discount, probability):
     cellColumn = cell[1]
     cellVal = gridWorld[cellRow][cellColumn]
     surroundingVals = []
+    directions = []
+    if cellRow + 1 >= gridWorldDimensions[0]:
+        surroundingVals.append(cellVal)
+        directions.append("down")
     if cellRow + 1 < gridWorldDimensions[0]:
         surroundingVals.append(gridWorld[cellRow + 1][cellColumn])
-    if gridWorldDimensions[0] > cellRow - 1 >= 0:  # need to make sure it doesn't
+        directions.append("down")
+    if gridWorldDimensions[0] > cellRow - 1 >= 0:  # because we do something else if it is less than 0
         surroundingVals.append(gridWorld[cellRow - 1][cellColumn])
+        directions.append("up")
+    if cellRow - 1 < 0:
+        surroundingVals.append(cellVal)
+        directions.append("up")
+    if cellColumn + 1 >= gridWorldDimensions[1]:
+        surroundingVals.append(cellVal)
+        directions.append("right")
     if cellColumn + 1 < gridWorldDimensions[1]:
         surroundingVals.append(gridWorld[cellRow][cellColumn + 1])
+        directions.append("right")
     if gridWorldDimensions[1] > cellColumn - 1 >= 0:
         surroundingVals.append(gridWorld[cellRow][cellColumn - 1])
+        directions.append("left")
+    if cellColumn - 1 < 0:
+        surroundingVals.append(cellVal)
+        directions.append("left")
     expectedBestIndex = surroundingVals.index(max(surroundingVals))
     expectedBest = surroundingVals[expectedBestIndex]
+    direction = directions[expectedBestIndex]
+    print("Expected Best: ", expectedBest)
     if len(set(surroundingVals)) == 1:  # sets remove duplicate values, so if everything is the same
-        update = cellVal + discount * expectedBest
+        surroundingVals.remove(cellVal)   # all actions have the same utility
+    del surroundingVals[expectedBestIndex]  # it was the best one, so it's not a value to consider anymore
+    # Because we go in right angles to direction we go in to get best outcome, we will always do
+    remainingProb = round((1-probability) / 2, 1)  # otherwise it gives a silly answer
+    # going in right angles means going left or right if going up or down
+    # and up and down if going left or right
+    print("Best action is ", direction)
+    otherDirectionVal = 0
+    if direction == "up" or direction == "down":
+        if gridWorldDimensions[1] > cellColumn - 1 >= 0:  # left
+            otherDirectionVal += gridWorld[cellRow][cellColumn - 1] * remainingProb
+        if cellColumn - 1 < 0:  # left
+            otherDirectionVal += cellVal * remainingProb
+        if cellColumn + 1 >= gridWorldDimensions[1]:  # right
+            otherDirectionVal += cellVal * remainingProb
+        if cellColumn + 1 < gridWorldDimensions[1]:  # right
+            otherDirectionVal += gridWorld[cellRow][cellColumn + 1] * remainingProb
+    elif direction == "right" or direction == "left":
+        if cellRow + 1 >= gridWorldDimensions[0]:  # down
+            otherDirectionVal += cellVal * remainingProb
+        if cellRow + 1 < gridWorldDimensions[0]:  # down
+            otherDirectionVal += gridWorld[cellRow + 1][cellColumn] * remainingProb
+        if gridWorldDimensions[0] > cellRow - 1 >= 0:  # up
+            otherDirectionVal += gridWorld[cellRow - 1][cellColumn] * remainingProb
+        if cellRow - 1 < 0:
+            otherDirectionVal += cellVal * remainingProb  # up
     else:
-        del surroundingVals[expectedBestIndex]  # it was the best one, so it's not a value to consider anymore
-        utilityOfOthers = []
-        probOfOthers = (1 - probability) / len(surroundingVals)
-        for surrounding in surroundingVals:
-            utilityOfOthers.append(probOfOthers * surrounding)
-        value = sum(utilityOfOthers)
-        update = cellVal + discount * (probability * expectedBest + value)
+        print("internal error at going in right angles")
+    update = cellVal + discount * (probability * expectedBest + otherDirectionVal)
     return update
 
 
@@ -730,8 +769,6 @@ def main():
         elif user == "clustering":
             print("You have selected Clustering via K-Means")
             xs, ys = getxys()
-            X = linear_resizer(xs)
-            Y = linear_resizer(ys)
             numCentroids = int(input("How many initialised centroids (0 if none): "))  # this is k
             centroids = []
             if numCentroids > 0:
@@ -740,7 +777,6 @@ def main():
                     for i in range(numCentroids):
                         centroid = toarray(input("Please now enter centroid {0}: ".format(i)))
                         centroids.append(centroid)
-                    print(centroids)
                     closestCentroids = []
                     for index, x in enumerate(xs):
                         distances = []
@@ -767,6 +803,7 @@ def main():
                         newGroupIY = np.mean(np.array(groupIYs))
                         print("New Centroid is: ({0},{1})".format(newGroupIX, newGroupIY))
             else:
+                X = linear_resizer(xs)
                 kmm = KMeans()
                 kmm.fit(X)
                 plt.figure()
