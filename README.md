@@ -127,7 +127,12 @@ IMPORTANT: Math bot will automatically 0 index (so start at 0) with the classes,
     - for this, type "clustering"
 Clusters data points via K-Means per iteration and provides new centroids.
 If you want to know how many iterations you would need until convergence, type 0 when prompted for how many initialised centroids
+### Value Iteration
+    - for this type "value" or "value iteration"
+Can do value iteration in a 2D and 1D grid worlds. Cannot move in diagonals. Can move in only up-down, left-right or both. It assumes -1 as a terminal state and 10 as a goal state
 
+IMPORTANT NOTE:
+Mathbot indexes Grid World in the following way:
+This may be different to the way it is indexed in the question. BE WARY.
 
-## Upcoming is:
-Value Iteration
+![image](images/GridWorld.png)
