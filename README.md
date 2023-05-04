@@ -128,7 +128,9 @@ IMPORTANT: Math bot will automatically 0 index (so start at 0) with the classes,
 ### Clustering via K-Means
     - for this, type "clustering"
 Clusters data points via K-Means per iteration and provides new centroids.
-If you want to know how many iterations you would need until convergence, type 0 when prompted for how many initialised centroids. It will colour the data points differently per different centroid.
+If you want to know convergence, increase the iteration count and see whan the value stops changing for the centroids.
+Typing 0 when prompted for how many initialised centroids will show you the optimised number of centroids.
+It may give a warning, you can ignore this.
 ### Value Iteration
     - for this type "value" or "value iteration"
 Can do value iteration in a 2D and 1D grid worlds. Cannot move in diagonals. Can move in only up-down, left-right or both. It will ask you for terminal states which includes goal states.
