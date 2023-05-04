@@ -873,10 +873,10 @@ def main():
             centroids = []
             if numCentroids > 0:
                 iterations = int(input("How many iterations would you like to do?: "))
+                for i in range(numCentroids):
+                    centroid = toarray(input("Please now enter centroid {0}: ".format(i)))
+                    centroids.append(centroid)
                 for iteration in range(iterations):
-                    for i in range(numCentroids):
-                        centroid = toarray(input("Please now enter centroid {0}: ".format(i)))
-                        centroids.append(centroid)
                     closestCentroids = []
                     for index, x in enumerate(xs):
                         distances = []
@@ -891,6 +891,7 @@ def main():
                     plt.scatter(xs, ys, c=closestCentroids, cmap='cool')
                     plt.show()
                     # create new centroids from the means of our classification
+                    newCentroids = []
                     for i in range(len(centroids)):
                         # this gets the indexes of all the points with the same centroid
                         groupI = list_duplicates_of(closestCentroids, i)
@@ -901,7 +902,10 @@ def main():
                             groupIYs.append(ys[member])
                         newGroupIX = np.mean(np.array(groupIXs))
                         newGroupIY = np.mean(np.array(groupIYs))
-                        print("New Centroid is: ({0},{1})".format(newGroupIX, newGroupIY))
+                        newCentroid = str(newGroupIX) + "," + str(newGroupIY)
+                        print("New Centroid is: ({0})".format(newCentroid))
+                        newCentroids.append(toarray(newCentroid))
+                    centroids = newCentroids
             else:
                 X = linear_resizer(xs)
                 kmm = KMeans()
@@ -909,6 +913,7 @@ def main():
                 plt.figure()
                 print(kmm.labels_)
                 plt.scatter(xs, ys, c=kmm.labels_, cmap='cool')
+                print("Centroids: ", kmm.cluster_centers_)
                 plt.show()
         elif user == "help":
             print("I can currently calculate the following: ", possible)
